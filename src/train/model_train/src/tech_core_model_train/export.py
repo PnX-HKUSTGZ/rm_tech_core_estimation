@@ -14,10 +14,13 @@ import torch
 from tech_core_data_generator.dataset import load_manifest, require_empty
 from tech_core_data_generator.geometry import geometry_contract, geometry_sha256
 
-from .evaluate import model_hashes
+from .evaluate import model_hashes, score_prediction
 from .labels import check_geometry, read_yaml, rgb_image, sha256, write_yaml
 from .litehrnet.predict import DetectorLitePredictor, best_box, crop_input, decode_prediction, letterbox, lite_weights
+from .pnp import KeypointModel
 from .yolo import yolo_weights
+
+CONFIDENCE_TOLERANCE = 1e-3  ##< Allowed PyTorch/ONNX per-point confidence difference.
 
 
 def export_graphs(detector, keypoints, directory):
@@ -89,9 +92,12 @@ def verify_release(directory):
         deviation = float(np.linalg.norm(pred.pixels - case["pixels"], axis=1).max())
         if not deviation < 0.5:
             raise ValueError(f"Keypoints differ by {deviation:g} pixel for {case['image']}")
-        if not (
-            np.array_equal(pred.valid(w, h, meta["keypoints"]["threshold"]), case["valid"])
-            and np.allclose(pred.confidence, case["confidence"], atol=1e-4, rtol=0)
+        threshold = meta["keypoints"]["threshold"]
+        # float32 graph differences reach ~1e-4 in confidence; a validity flip within that band of the threshold is noise.
+        decisive = np.abs(np.asarray(case["confidence"]) - threshold) > CONFIDENCE_TOLERANCE
+        flips = pred.valid(w, h, threshold) != np.asarray(case["valid"])
+        if np.any(flips & decisive) or not np.allclose(
+            pred.confidence, case["confidence"], atol=CONFIDENCE_TOLERANCE, rtol=0
         ):
             raise ValueError(f"Keypoint confidence or validity differs for {case['image']}")
         errors.append(deviation)
@@ -100,13 +106,17 @@ def verify_release(directory):
     return {"detections": len(errors), "end_to_end_max_px": max(errors)}
 
 
-def _golden(directory, data, manifest, frames):
-    """@brief Sample up to 16 evaluation frames across splits and hits/misses, retaining PyTorch predictions."""
+def _golden(directory, data, manifest, frames, predictor, threshold):
+    """@brief Sample up to 16 evaluation frames across splits and hits/misses; store CPU PyTorch predictions.
+
+    The evaluation may have run on CUDA; the reference is recomputed on CPU, the deployment target of the check.
+    """
     groups = defaultdict(list)
     for frame in frames:
         groups[(frame["renderer"], frame["split"], frame["bbox_xyxy"] is not None)].append(frame)
     sampled = [frame for batch in zip_longest(*groups.values()) for frame in batch if frame is not None][:16]
     rows = {row["id"]: row for row in manifest["records"]}
+    model = KeypointModel()
     directory.mkdir()
     cases = []
     for frame in sampled:
@@ -114,6 +124,7 @@ def _golden(directory, data, manifest, frames):
         image = Path(row["image"])
         name = row["id"] + image.suffix
         shutil.copyfile(data / image, directory / name)
+        frame = score_prediction(row, predictor.predict(rgb_image(data / image)), threshold, model)
         fields = ("id", "bbox_xyxy", "score", "pixels", "confidence", "valid", "camera_from_core")
         cases.append(
             {k: frame[k] for k in fields}
@@ -194,7 +205,7 @@ def export(detector, keypoints, evaluation, out, verify=False):
         staging.mkdir()
         export_graphs(predictor.detector, network, staging)
         write_yaml(staging / "model_meta.yaml", meta)
-        _golden(staging / "golden", data, manifest, read_yaml(evaluation / "frames.yaml"))
+        _golden(staging / "golden", data, manifest, read_yaml(evaluation / "frames.yaml"), predictor, threshold)
         if verify:
             print("Golden verification", verify_release(staging), flush=True)
         staging.replace(out)
