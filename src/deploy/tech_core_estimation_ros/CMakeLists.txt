@@ -1,0 +1,46 @@
+cmake_minimum_required(VERSION 3.16)
+project(tech_core_estimation_ros LANGUAGES CXX)
+
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(rclcpp_components REQUIRED)
+find_package(rcl_interfaces REQUIRED)
+find_package(builtin_interfaces REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(diagnostic_msgs REQUIRED)
+find_package(diagnostic_updater REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(tf2_eigen REQUIRED)
+find_package(cv_bridge REQUIRED)
+find_package(image_transport REQUIRED)
+find_package(tech_core_estimation_model REQUIRED)
+find_package(tech_core_estimation REQUIRED)
+find_package(OpenCV REQUIRED COMPONENTS core calib3d imgproc)
+
+add_library(estimator_component SHARED src/estimator_node.cpp src/conversions.cpp)
+target_compile_features(estimator_component PUBLIC cxx_std_17)
+ament_target_dependencies(estimator_component PUBLIC rclcpp rclcpp_components rcl_interfaces builtin_interfaces
+  std_msgs sensor_msgs geometry_msgs diagnostic_msgs diagnostic_updater tf2_ros tf2_eigen cv_bridge
+  image_transport tech_core_estimation_model tech_core_estimation)
+target_link_libraries(estimator_component PRIVATE opencv_calib3d opencv_imgproc)
+rclcpp_components_register_node(estimator_component
+  PLUGIN "tech_core_estimation_ros::EstimatorNode" EXECUTABLE tech_core_estimation_node)
+
+install(TARGETS estimator_component LIBRARY DESTINATION lib)
+install(DIRECTORY config launch DESTINATION share/${PROJECT_NAME})
+
+set(TECH_CORE_GOLDEN_DIR "" CACHE PATH "Model release directory for the ROS camera replay")
+if(BUILD_TESTING)
+  find_package(ament_cmake_gtest REQUIRED)
+  ament_add_gtest(test_conversions test/test_conversions.cpp)
+  target_include_directories(test_conversions PRIVATE src)
+  target_link_libraries(test_conversions estimator_component)
+  if(TECH_CORE_GOLDEN_DIR)
+    find_package(launch_testing_ament_cmake REQUIRED)
+    add_launch_test(test/test_estimator_launch.py TIMEOUT 120 ENV "TECH_CORE_GOLDEN_DIR=${TECH_CORE_GOLDEN_DIR}")
+  endif()
+endif()
+
+ament_package()

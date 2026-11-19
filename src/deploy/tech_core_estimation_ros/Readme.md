@@ -24,7 +24,7 @@ TF: world_from_camera（取图像时间戳）───────────�
 | 名称 | 类型 | 方向 | 说明 |
 |---|---|---|---|
 | `image` | `sensor_msgs/Image` | 订阅 | `bgr8` 或 `rgb8`，通过 `image_transport::CameraSubscriber` 与 `camera_info` 同步 |
-| `camera_info` | `sensor_msgs/CameraInfo` | 订阅 | K、D 为 pixel 量；`frame_id` 为相机光学系 |
+| `camera_info` | `sensor_msgs/CameraInfo` | 订阅 | 原始针孔标定，焦距与主点单位 pixel，D 为 OpenCV 畸变系数；`frame_id` 为相机光学系 |
 | `~/core_pose` | `geometry_msgs/PoseStamped` | 发布 | 核心系在世界系中的位姿，平移单位 m，时间戳与图像相同 |
 | `~/debug_image` | `sensor_msgs/Image` | 发布 | 检测框、关键点与重投影模型叠加图；仅在有订阅者时生成 |
 | `/diagnostics` | `diagnostic_msgs/DiagnosticArray` | 发布 | 帧率、各类失败原因的计数、推理与解算耗时（s） |
@@ -35,8 +35,8 @@ TF: world_from_camera（取图像时间戳）───────────�
 | 参数 | 默认值 | 说明 |
 |---|---|---|
 | `model_dir` | 无（必填） | model_train 导出的发布目录 |
-| `backend` | `openvino` | `openvino` 或 `tensorrt` |
-| `device` | `CPU` | OpenVINO 设备名，或 CUDA 设备序号 |
+| `backend` | `openvino` | 当前支持 `openvino`，TensorRT 待模型库提供 |
+| `device` | `CPU` | OpenVINO 设备名 |
 | `world_frame` | `base_link` | 世界系的 frame 名，即机械臂基座系 |
 | `core_frame` | `tech_core` | 核心系的 frame 名 |
 | `publish_tf` | `true` | 是否发布 TF |

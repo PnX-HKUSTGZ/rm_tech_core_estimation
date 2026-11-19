@@ -1,0 +1,14 @@
+tech_core_estimation:
+  ros__parameters:
+    backend: openvino
+    device: CPU
+    world_frame: base_link
+    core_frame: tech_core
+    publish_tf: true
+    tf_timeout: 0.05
+    pnp:
+      reprojection_threshold: 3.0
+      ransac_iterations: 300
+      ransac_confidence: 0.999
+      local_optimization_steps: 3
+      huber_refinement: true
