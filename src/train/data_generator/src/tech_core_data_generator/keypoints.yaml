@@ -1,0 +1,87 @@
+schema_version: 2
+profile: shell5_rule_lengths_model_reference_v2
+frame: model_core_reference_nominal_E
+units: metres
+source: Rule Fig.5-9 lengths plus user-confirmed coplanarity/symmetry and an explicit existing-model reference.
+shell_construction:
+  method: Normalize the model shoulder direction, scale to the rule 98 mm length, mirror in Y, then drop 74 mm along -Z.
+  rule_source: {document: RoboMaster 2027 competition rules V1.0.0 (20261015), figure: 5-9, printed_page: 81, pdf_page: 82}
+  rule_lengths_m: {shoulder: 0.098, vertical_drop: 0.074}
+  user_confirmed_constraints: [shell points are coplanar, shell bilateral symmetry]
+  model_reference:
+    source: models/tech_core/meshes/shell.obj
+    top_vertex_index_1based: 8277
+    right_shoulder_vertex_index_1based: 8040
+    top_xyz_m: [-0.1120000034570694, 0.0, 0.3254493176937103]
+    right_shoulder_xyz_m: [-0.1120000034570694, 0.08487057685852051, 0.2764492928981781]
+    sha256: fc2c0b8abb64bf5503f398ab7091e96c11003af156fc606b68cb8485e924b404
+  limitations: ['Plane placement and in-plane edge direction come from the existing model, not explicit rule coordinates.',
+    The figure does not uniquely determine the absolute E-frame XYZ from coplanarity and symmetry alone., The remaining proposed
+      frame corners were excluded because nominal-length locations do not match current rounded mesh features.]
+unchanged_groups: {marker: 10 original Fig.5-8 plane landmarks at model x=-0.1 m, pillar: Original mesh surface-axis intersection
+    x=0.004484280944272889 m; not a rule-specified E offset}
+points:
+- name: shell_seam_left
+  xyz: [-0.1120000034570694, -0.08487050065599384, 0.2764493368937044]
+  group: shell
+  light_geom: ''
+- name: shell_seam_top
+  xyz: [-0.1120000034570694, 0.0, 0.3254493176937103]
+  group: shell
+  light_geom: ''
+- name: shell_seam_right
+  xyz: [-0.1120000034570694, 0.08487050065599384, 0.2764493368937044]
+  group: shell
+  light_geom: ''
+- name: shell_notch_left
+  xyz: [-0.1120000034570694, -0.08487050065599384, 0.20244933689370437]
+  group: shell
+  light_geom: ''
+- name: shell_notch_right
+  xyz: [-0.1120000034570694, 0.08487050065599384, 0.20244933689370437]
+  group: shell
+  light_geom: ''
+- name: marker_top_left
+  xyz: [-0.1, -0.04, 0.04]
+  group: marker
+  light_geom: core_pillar_L_light_3
+- name: marker_top_left_inner
+  xyz: [-0.1, -0.01, 0.04]
+  group: marker
+  light_geom: core_pillar_L_light_3
+- name: marker_top_right
+  xyz: [-0.1, 0.04, 0.04]
+  group: marker
+  light_geom: core_pillar_L_light_5
+- name: marker_left_upper_end
+  xyz: [-0.1, -0.04, 0.01]
+  group: marker
+  light_geom: core_pillar_L_light_3
+- name: marker_left_lower_end
+  xyz: [-0.1, -0.04, -0.01]
+  group: marker
+  light_geom: core_pillar_L_light_2
+- name: marker_right_lower_end
+  xyz: [-0.1, 0.04, -0.01]
+  group: marker
+  light_geom: core_pillar_L_light_1
+- name: marker_bottom_left
+  xyz: [-0.1, -0.04, -0.04]
+  group: marker
+  light_geom: core_pillar_L_light_2
+- name: marker_bottom_left_inner
+  xyz: [-0.1, -0.01, -0.04]
+  group: marker
+  light_geom: core_pillar_L_light_2
+- name: marker_bottom_right_inner
+  xyz: [-0.1, 0.01, -0.04]
+  group: marker
+  light_geom: core_pillar_L_light_1
+- name: marker_bottom_right
+  xyz: [-0.1, 0.04, -0.04]
+  group: marker
+  light_geom: core_pillar_L_light_1
+- name: pillar_tip
+  xyz: [0.004484280944272889, 0.0, 0.0]
+  group: pillar
+  light_geom: ''

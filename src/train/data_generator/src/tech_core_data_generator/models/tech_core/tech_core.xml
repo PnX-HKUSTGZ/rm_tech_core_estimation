@@ -1,0 +1,226 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mujoco model="tech_core">
+  <compiler angle="radian" autolimits="true" inertiafromgeom="auto" />
+  <option timestep="0.001" integrator="implicitfast" gravity="0 0 -9.81" iterations="80" tolerance="1e-9" cone="elliptic">
+    <flag filterparent="disable" />
+  </option>
+  <size njmax="2000" nconmax="1000" />
+  <statistic center="-0.0981863550842 0 0.204632483423" extent="0.750920490882" />
+  <visual>
+    <global offwidth="1440" offheight="1000" />
+    <quality shadowsize="2048" offsamples="4" />
+    <headlight ambient="0.4 0.4 0.42" diffuse="0.65 0.65 0.65" specular="0.25 0.25 0.25" />
+    <rgba haze="0.11 0.13 0.16 1" />
+  </visual>
+  <default>
+    <geom contype="0" conaffinity="0" condim="4" friction="0.35 0.005 0.0001" solref="0.004 1" solimp="0.95 0.99 0.001" margin="0" mass="0" />
+    <joint limited="true" armature="0.0001" />
+    <site size="0.002" rgba="0 0 0 0" />
+  </default>
+  <asset>
+    <mesh name="collision_core_mating_face" file="collision/core_mating_face.obj" />
+    <mesh name="hkust_back_light_bar_1" file="meshes/back_light_bar_1.obj" inertia="shell" />
+    <mesh name="hkust_back_light_bar_10" file="meshes/back_light_bar_10.obj" inertia="shell" />
+    <mesh name="hkust_back_light_bar_11" file="meshes/back_light_bar_11.obj" inertia="shell" />
+    <mesh name="hkust_back_light_bar_12" file="meshes/back_light_bar_12.obj" inertia="shell" />
+    <mesh name="hkust_back_light_bar_13" file="meshes/back_light_bar_13.obj" inertia="shell" />
+    <mesh name="hkust_back_light_bar_14" file="meshes/back_light_bar_14.obj" inertia="shell" />
+    <mesh name="hkust_back_light_bar_15" file="meshes/back_light_bar_15.obj" inertia="shell" />
+    <mesh name="hkust_back_light_bar_16" file="meshes/back_light_bar_16.obj" inertia="shell" />
+    <mesh name="hkust_back_light_bar_17" file="meshes/back_light_bar_17.obj" inertia="shell" />
+    <mesh name="hkust_back_light_bar_18" file="meshes/back_light_bar_18.obj" inertia="shell" />
+    <mesh name="hkust_back_light_bar_19" file="meshes/back_light_bar_19.obj" inertia="shell" />
+    <mesh name="hkust_back_light_bar_2" file="meshes/back_light_bar_2.obj" inertia="shell" />
+    <mesh name="hkust_back_light_bar_20" file="meshes/back_light_bar_20.obj" inertia="shell" />
+    <mesh name="hkust_back_light_bar_21" file="meshes/back_light_bar_21.obj" inertia="shell" />
+    <mesh name="hkust_back_light_bar_22" file="meshes/back_light_bar_22.obj" inertia="shell" />
+    <mesh name="hkust_back_light_bar_23" file="meshes/back_light_bar_23.obj" inertia="shell" />
+    <mesh name="hkust_back_light_bar_24" file="meshes/back_light_bar_24.obj" inertia="shell" />
+    <mesh name="hkust_back_light_bar_25" file="meshes/back_light_bar_25.obj" inertia="shell" />
+    <mesh name="hkust_back_light_bar_26" file="meshes/back_light_bar_26.obj" inertia="shell" />
+    <mesh name="hkust_back_light_bar_27" file="meshes/back_light_bar_27.obj" inertia="shell" />
+    <mesh name="hkust_back_light_bar_28" file="meshes/back_light_bar_28.obj" inertia="shell" />
+    <mesh name="hkust_back_light_bar_29" file="meshes/back_light_bar_29.obj" inertia="shell" />
+    <mesh name="hkust_back_light_bar_3" file="meshes/back_light_bar_3.obj" inertia="shell" />
+    <mesh name="hkust_back_light_bar_30" file="meshes/back_light_bar_30.obj" inertia="shell" />
+    <mesh name="hkust_back_light_bar_31" file="meshes/back_light_bar_31.obj" inertia="shell" />
+    <mesh name="hkust_back_light_bar_32" file="meshes/back_light_bar_32.obj" inertia="shell" />
+    <mesh name="hkust_back_light_bar_33" file="meshes/back_light_bar_33.obj" inertia="shell" />
+    <mesh name="hkust_back_light_bar_34" file="meshes/back_light_bar_34.obj" inertia="shell" />
+    <mesh name="hkust_back_light_bar_35" file="meshes/back_light_bar_35.obj" inertia="shell" />
+    <mesh name="hkust_back_light_bar_36" file="meshes/back_light_bar_36.obj" inertia="shell" />
+    <mesh name="hkust_back_light_bar_4" file="meshes/back_light_bar_4.obj" inertia="shell" />
+    <mesh name="hkust_back_light_bar_5" file="meshes/back_light_bar_5.obj" inertia="shell" />
+    <mesh name="hkust_back_light_bar_6" file="meshes/back_light_bar_6.obj" inertia="shell" />
+    <mesh name="hkust_back_light_bar_7" file="meshes/back_light_bar_7.obj" inertia="shell" />
+    <mesh name="hkust_back_light_bar_8" file="meshes/back_light_bar_8.obj" inertia="shell" />
+    <mesh name="hkust_back_light_bar_9" file="meshes/back_light_bar_9.obj" inertia="shell" />
+    <mesh name="hkust_back_main_light_1" file="meshes/back_main_light_1.obj" inertia="shell" />
+    <mesh name="hkust_back_main_light_2" file="meshes/back_main_light_2.obj" inertia="shell" />
+    <mesh name="hkust_pillar_L_light_1" file="meshes/pillar_L_light_1.obj" inertia="shell" />
+    <mesh name="hkust_pillar_L_light_2" file="meshes/pillar_L_light_2.obj" inertia="shell" />
+    <mesh name="hkust_pillar_L_light_3" file="meshes/pillar_L_light_3.obj" inertia="shell" />
+    <mesh name="hkust_pillar_L_light_4" file="meshes/pillar_L_light_4.obj" inertia="shell" />
+    <mesh name="hkust_pillar_L_light_5" file="meshes/pillar_L_light_5.obj" inertia="shell" />
+    <mesh name="hkust_pillar_L_light_6" file="meshes/pillar_L_light_6.obj" inertia="shell" />
+    <mesh name="hkust_pillar_base_inner" file="meshes/pillar_base_inner.obj" inertia="shell" />
+    <mesh name="hkust_pillar_base_outer" file="meshes/pillar_base_outer.obj" inertia="shell" />
+    <mesh name="hkust_pillar_base_screw_1" file="meshes/pillar_base_screw_1.obj" inertia="shell" />
+    <mesh name="hkust_pillar_base_screw_2" file="meshes/pillar_base_screw_2.obj" inertia="shell" />
+    <mesh name="hkust_pillar_base_screw_3" file="meshes/pillar_base_screw_3.obj" inertia="shell" />
+    <mesh name="hkust_pillar_base_screw_4" file="meshes/pillar_base_screw_4.obj" inertia="shell" />
+    <mesh name="hkust_pillar_inner_ring_1" file="meshes/pillar_inner_ring_1.obj" inertia="shell" />
+    <mesh name="hkust_pillar_inner_ring_2" file="meshes/pillar_inner_ring_2.obj" inertia="shell" />
+    <mesh name="hkust_pillar_side_inner__electromagnet_base" file="meshes/pillar_side_inner__electromagnet_base.obj" inertia="shell" />
+    <mesh name="hkust_pillar_side_inner__electromagnet_ring" file="meshes/pillar_side_inner__electromagnet_ring.obj" inertia="shell" />
+    <mesh name="hkust_pillar_side_light_1" file="meshes/pillar_side_light_1.obj" inertia="shell" />
+    <mesh name="hkust_pillar_side_light_2" file="meshes/pillar_side_light_2.obj" inertia="shell" />
+    <mesh name="hkust_pillar_side_light_3" file="meshes/pillar_side_light_3.obj" inertia="shell" />
+    <mesh name="hkust_pillar_side_outer" file="meshes/pillar_side_outer.obj" inertia="shell" />
+    <mesh name="hkust_pillar_slide" file="meshes/pillar_slide.obj" inertia="shell" />
+    <mesh name="hkust_shell" file="meshes/shell.obj" inertia="shell" />
+    <material name="core_back_light_bar_1_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_back_light_bar_10_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_back_light_bar_11_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_back_light_bar_12_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_back_light_bar_13_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_back_light_bar_14_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_back_light_bar_15_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_back_light_bar_16_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_back_light_bar_17_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_back_light_bar_18_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_back_light_bar_19_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_back_light_bar_2_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_back_light_bar_20_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_back_light_bar_21_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_back_light_bar_22_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_back_light_bar_23_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_back_light_bar_24_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_back_light_bar_25_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_back_light_bar_26_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_back_light_bar_27_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_back_light_bar_28_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_back_light_bar_29_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_back_light_bar_3_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_back_light_bar_30_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_back_light_bar_31_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_back_light_bar_32_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_back_light_bar_33_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_back_light_bar_34_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_back_light_bar_35_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_back_light_bar_36_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_back_light_bar_4_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_back_light_bar_5_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_back_light_bar_6_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_back_light_bar_7_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_back_light_bar_8_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_back_light_bar_9_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_back_main_light_1_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_back_main_light_2_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_pillar_L_light_1_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_pillar_L_light_2_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_pillar_L_light_3_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_pillar_L_light_4_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_pillar_L_light_5_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_pillar_L_light_6_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_pillar_base_inner_mat" rgba="0.0986138174517 0.0986138174517 0.0986138174517 1" specular="0.4" shininess="0.3" emission="0" />
+    <material name="core_pillar_base_outer_mat" rgba="0.0986138174517 0.0986138174517 0.0986138174517 1" specular="0.4" shininess="0.3" emission="0" />
+    <material name="core_pillar_base_screw_1_mat" rgba="0.554588915575 0.554588915575 0.554588915575 1" specular="0.4" shininess="0.3" emission="0" />
+    <material name="core_pillar_base_screw_2_mat" rgba="0.554588915575 0.554588915575 0.554588915575 1" specular="0.4" shininess="0.3" emission="0" />
+    <material name="core_pillar_base_screw_3_mat" rgba="0.554588915575 0.554588915575 0.554588915575 1" specular="0.4" shininess="0.3" emission="0" />
+    <material name="core_pillar_base_screw_4_mat" rgba="0.554588915575 0.554588915575 0.554588915575 1" specular="0.4" shininess="0.3" emission="0" />
+    <material name="core_pillar_inner_ring_1_mat" rgba="0.0986138174517 0.0986138174517 0.0986138174517 1" specular="0.4" shininess="0.3" emission="0" />
+    <material name="core_pillar_inner_ring_2_mat" rgba="0.0986138174517 0.0986138174517 0.0986138174517 1" specular="0.4" shininess="0.3" emission="0" />
+    <material name="core_pillar_side_inner__electromagnet_base_mat" rgba="0.0785109598464 0.0575937786241 0.0356285324786 1" specular="0.4" shininess="0.3" emission="0" />
+    <material name="core_pillar_side_inner__electromagnet_ring_mat" rgba="0.696380728002 0.696380728002 0.696380728002 1" specular="0.4" shininess="0.3" emission="0" />
+    <material name="core_pillar_side_light_1_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_pillar_side_light_2_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_pillar_side_light_3_mat" rgba="0.9 0.02 0.035 1" specular="0.25" shininess="0.3" emission="0.6" />
+    <material name="core_pillar_side_outer_mat" rgba="0.0986138174517 0.0986138174517 0.0986138174517 1" specular="0.4" shininess="0.3" emission="0" />
+    <material name="core_pillar_slide_mat" rgba="0.0986138174517 0.0986138174517 0.0986138174517 1" specular="0.4" shininess="0.3" emission="0" />
+    <material name="core_shell_mat" rgba="0.0986138174517 0.0986138174517 0.0986138174517 1" specular="0.4" shininess="0.3" emission="0" />
+  </asset>
+  <worldbody>
+    <body name="core_base" mocap="true" pos="0 0 0">
+      <site name="core_reference" pos="0 0 0" />
+      <geom name="core_back_light_bar_1" type="mesh" mesh="hkust_back_light_bar_1" material="core_back_light_bar_1_mat" group="0" />
+      <geom name="core_back_light_bar_10" type="mesh" mesh="hkust_back_light_bar_10" material="core_back_light_bar_10_mat" group="0" />
+      <geom name="core_back_light_bar_11" type="mesh" mesh="hkust_back_light_bar_11" material="core_back_light_bar_11_mat" group="0" />
+      <geom name="core_back_light_bar_12" type="mesh" mesh="hkust_back_light_bar_12" material="core_back_light_bar_12_mat" group="0" />
+      <geom name="core_back_light_bar_13" type="mesh" mesh="hkust_back_light_bar_13" material="core_back_light_bar_13_mat" group="0" />
+      <geom name="core_back_light_bar_14" type="mesh" mesh="hkust_back_light_bar_14" material="core_back_light_bar_14_mat" group="0" />
+      <geom name="core_back_light_bar_15" type="mesh" mesh="hkust_back_light_bar_15" material="core_back_light_bar_15_mat" group="0" />
+      <geom name="core_back_light_bar_16" type="mesh" mesh="hkust_back_light_bar_16" material="core_back_light_bar_16_mat" group="0" />
+      <geom name="core_back_light_bar_17" type="mesh" mesh="hkust_back_light_bar_17" material="core_back_light_bar_17_mat" group="0" />
+      <geom name="core_back_light_bar_18" type="mesh" mesh="hkust_back_light_bar_18" material="core_back_light_bar_18_mat" group="0" />
+      <geom name="core_back_light_bar_19" type="mesh" mesh="hkust_back_light_bar_19" material="core_back_light_bar_19_mat" group="0" />
+      <geom name="core_back_light_bar_2" type="mesh" mesh="hkust_back_light_bar_2" material="core_back_light_bar_2_mat" group="0" />
+      <geom name="core_back_light_bar_20" type="mesh" mesh="hkust_back_light_bar_20" material="core_back_light_bar_20_mat" group="0" />
+      <geom name="core_back_light_bar_21" type="mesh" mesh="hkust_back_light_bar_21" material="core_back_light_bar_21_mat" group="0" />
+      <geom name="core_back_light_bar_22" type="mesh" mesh="hkust_back_light_bar_22" material="core_back_light_bar_22_mat" group="0" />
+      <geom name="core_back_light_bar_23" type="mesh" mesh="hkust_back_light_bar_23" material="core_back_light_bar_23_mat" group="0" />
+      <geom name="core_back_light_bar_24" type="mesh" mesh="hkust_back_light_bar_24" material="core_back_light_bar_24_mat" group="0" />
+      <geom name="core_back_light_bar_25" type="mesh" mesh="hkust_back_light_bar_25" material="core_back_light_bar_25_mat" group="0" />
+      <geom name="core_back_light_bar_26" type="mesh" mesh="hkust_back_light_bar_26" material="core_back_light_bar_26_mat" group="0" />
+      <geom name="core_back_light_bar_27" type="mesh" mesh="hkust_back_light_bar_27" material="core_back_light_bar_27_mat" group="0" />
+      <geom name="core_back_light_bar_28" type="mesh" mesh="hkust_back_light_bar_28" material="core_back_light_bar_28_mat" group="0" />
+      <geom name="core_back_light_bar_29" type="mesh" mesh="hkust_back_light_bar_29" material="core_back_light_bar_29_mat" group="0" />
+      <geom name="core_back_light_bar_3" type="mesh" mesh="hkust_back_light_bar_3" material="core_back_light_bar_3_mat" group="0" />
+      <geom name="core_back_light_bar_30" type="mesh" mesh="hkust_back_light_bar_30" material="core_back_light_bar_30_mat" group="0" />
+      <geom name="core_back_light_bar_31" type="mesh" mesh="hkust_back_light_bar_31" material="core_back_light_bar_31_mat" group="0" />
+      <geom name="core_back_light_bar_32" type="mesh" mesh="hkust_back_light_bar_32" material="core_back_light_bar_32_mat" group="0" />
+      <geom name="core_back_light_bar_33" type="mesh" mesh="hkust_back_light_bar_33" material="core_back_light_bar_33_mat" group="0" />
+      <geom name="core_back_light_bar_34" type="mesh" mesh="hkust_back_light_bar_34" material="core_back_light_bar_34_mat" group="0" />
+      <geom name="core_back_light_bar_35" type="mesh" mesh="hkust_back_light_bar_35" material="core_back_light_bar_35_mat" group="0" />
+      <geom name="core_back_light_bar_36" type="mesh" mesh="hkust_back_light_bar_36" material="core_back_light_bar_36_mat" group="0" />
+      <geom name="core_back_light_bar_4" type="mesh" mesh="hkust_back_light_bar_4" material="core_back_light_bar_4_mat" group="0" />
+      <geom name="core_back_light_bar_5" type="mesh" mesh="hkust_back_light_bar_5" material="core_back_light_bar_5_mat" group="0" />
+      <geom name="core_back_light_bar_6" type="mesh" mesh="hkust_back_light_bar_6" material="core_back_light_bar_6_mat" group="0" />
+      <geom name="core_back_light_bar_7" type="mesh" mesh="hkust_back_light_bar_7" material="core_back_light_bar_7_mat" group="0" />
+      <geom name="core_back_light_bar_8" type="mesh" mesh="hkust_back_light_bar_8" material="core_back_light_bar_8_mat" group="0" />
+      <geom name="core_back_light_bar_9" type="mesh" mesh="hkust_back_light_bar_9" material="core_back_light_bar_9_mat" group="0" />
+      <geom name="core_back_main_light_1" type="mesh" mesh="hkust_back_main_light_1" material="core_back_main_light_1_mat" group="0" />
+      <geom name="core_back_main_light_2" type="mesh" mesh="hkust_back_main_light_2" material="core_back_main_light_2_mat" group="0" />
+      <geom name="core_shell" type="mesh" mesh="hkust_shell" material="core_shell_mat" group="0" />
+      <geom name="core_shell_collision" type="box" pos="-0.15650000423192978 0.0 0.2046324834227562" size="0.04450000077486038 0.2243005782365799 0.28299999982118607" contype="2" conaffinity="5" rgba="0 0 0 0" group="3" />
+      <body name="core_q_bearing" pos="-0.169 0 0.208">
+        <inertial pos="0 0 0" mass="0.3" diaginertia="0.001 0.001 0.001" />
+        <joint name="core_twist" type="hinge" axis="1 0 0" range="-1.57079632679 1.57079632679" damping="0" frictionloss="0" />
+        <body name="core_p_bearing">
+          <inertial pos="0.09 0 -0.06" mass="0.45" diaginertia="0.0006 0.0025 0.0025" />
+          <joint name="core_flip" type="hinge" axis="0 -1 0" range="0 1.57079632679" damping="0.15" frictionloss="0.02" />
+          <body name="core_carriage" pos="0.169 0 -0.208">
+            <inertial pos="-0.15 0 0.025" mass="0.6" diaginertia="0.002 0.002 0.001" />
+            <joint name="core_lift" type="slide" axis="0 0 1" range="0 0.1" damping="0" frictionloss="10" />
+            <site name="core_tip" pos="0 0 0" />
+            <site name="core_marker" pos="-0.1 0 0" />
+            <geom name="core_pillar_L_light_1" type="mesh" mesh="hkust_pillar_L_light_1" material="core_pillar_L_light_1_mat" group="0" contype="0" conaffinity="0" />
+            <geom name="core_pillar_L_light_2" type="mesh" mesh="hkust_pillar_L_light_2" material="core_pillar_L_light_2_mat" group="0" contype="0" conaffinity="0" />
+            <geom name="core_pillar_L_light_3" type="mesh" mesh="hkust_pillar_L_light_3" material="core_pillar_L_light_3_mat" group="0" contype="0" conaffinity="0" />
+            <geom name="core_pillar_L_light_4" type="mesh" mesh="hkust_pillar_L_light_4" material="core_pillar_L_light_4_mat" group="0" contype="0" conaffinity="0" />
+            <geom name="core_pillar_L_light_5" type="mesh" mesh="hkust_pillar_L_light_5" material="core_pillar_L_light_5_mat" group="0" contype="0" conaffinity="0" />
+            <geom name="core_pillar_L_light_6" type="mesh" mesh="hkust_pillar_L_light_6" material="core_pillar_L_light_6_mat" group="0" contype="0" conaffinity="0" />
+            <geom name="core_pillar_base_inner" type="mesh" mesh="hkust_pillar_base_inner" material="core_pillar_base_inner_mat" group="0" contype="0" conaffinity="0" />
+            <geom name="core_visual_pillar_base_outer" type="mesh" mesh="hkust_pillar_base_outer" material="core_pillar_base_outer_mat" group="0" contype="0" conaffinity="0" />
+            <!-- The other thirteen face hulls lie inside this independent convex collision envelope. -->
+            <geom name="core_pillar_base_outer" type="mesh" mesh="collision_core_mating_face" contype="2" conaffinity="5" rgba="0 0 0 0" group="3" />
+            <geom name="core_pillar_base_screw_1" type="mesh" mesh="hkust_pillar_base_screw_1" material="core_pillar_base_screw_1_mat" group="0" contype="0" conaffinity="0" />
+            <geom name="core_pillar_base_screw_2" type="mesh" mesh="hkust_pillar_base_screw_2" material="core_pillar_base_screw_2_mat" group="0" contype="0" conaffinity="0" />
+            <geom name="core_pillar_base_screw_3" type="mesh" mesh="hkust_pillar_base_screw_3" material="core_pillar_base_screw_3_mat" group="0" contype="0" conaffinity="0" />
+            <geom name="core_pillar_base_screw_4" type="mesh" mesh="hkust_pillar_base_screw_4" material="core_pillar_base_screw_4_mat" group="0" contype="0" conaffinity="0" />
+            <geom name="core_pillar_inner_ring_1" type="mesh" mesh="hkust_pillar_inner_ring_1" material="core_pillar_inner_ring_1_mat" group="0" contype="0" conaffinity="0" />
+            <geom name="core_pillar_inner_ring_2" type="mesh" mesh="hkust_pillar_inner_ring_2" material="core_pillar_inner_ring_2_mat" group="0" contype="0" conaffinity="0" />
+            <geom name="core_pillar_side_inner__electromagnet_base" type="mesh" mesh="hkust_pillar_side_inner__electromagnet_base" material="core_pillar_side_inner__electromagnet_base_mat" group="0" />
+            <geom name="core_pillar_side_inner__electromagnet_ring" type="mesh" mesh="hkust_pillar_side_inner__electromagnet_ring" material="core_pillar_side_inner__electromagnet_ring_mat" group="0" />
+            <geom name="core_pillar_side_light_1" type="mesh" mesh="hkust_pillar_side_light_1" material="core_pillar_side_light_1_mat" group="0" />
+            <geom name="core_pillar_side_light_2" type="mesh" mesh="hkust_pillar_side_light_2" material="core_pillar_side_light_2_mat" group="0" />
+            <geom name="core_pillar_side_light_3" type="mesh" mesh="hkust_pillar_side_light_3" material="core_pillar_side_light_3_mat" group="0" />
+            <geom name="core_pillar_side_outer" type="mesh" mesh="hkust_pillar_side_outer" material="core_pillar_side_outer_mat" group="0" />
+            <geom name="core_pillar_slide" type="mesh" mesh="hkust_pillar_slide" material="core_pillar_slide_mat" group="0" contype="2" conaffinity="5" />
+            <geom name="core_peg" type="cylinder" pos="-0.05 0 0" size="0.018 0.05" quat="0.707106781187 0 0.707106781187 0" contype="2" conaffinity="5" rgba="0 0 0 0" group="3" />
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+</mujoco>

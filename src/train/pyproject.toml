@@ -1,0 +1,29 @@
+[project]
+name = "tech-core-training"
+version = "0.1.0"
+requires-python = "==3.12.*"
+dependencies = ["tech-core-data-generator"]
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = ["data_generator"]
+
+[tool.uv.sources]
+tech-core-data-generator = { workspace = true }
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
+[dependency-groups]
+dev = ["pytest", "ruff"]
+
+[tool.ruff]
+line-length = 120
+
+[tool.pytest.ini_options]
+# A sourced ROS shell adds colcon launch plugins to PYTHONPATH outside this uv environment.
+addopts = "-p no:launch_testing -p no:launch_pytest -p no:launch_ros"

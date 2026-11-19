@@ -34,8 +34,8 @@ explicit = true
 
 外部工具不由 uv 管理：
 
-- **Blender ≥ 4.2**（已验证 4.5.3 LTS），用于生成训练数据。通过 `BLENDER_EXECUTABLE` 环境变量或 `PATH` 指定。
-- **MuJoCo 无显示渲染**：在没有显示器的 Linux 上，启动 Python 之前设置 `MUJOCO_GL=egl`（需要 EGL 驱动）；纯软件环境可改用 `osmesa`。
+- **Blender ≥ 4.2**（已验证 4.5.3 LTS 和 5.0.1），用于生成训练数据。通过 `BLENDER_EXECUTABLE` 环境变量或 `PATH` 指定。
+- **MuJoCo 无显示渲染**：在没有显示器的 Linux 上，启动 Python 之前设置 `MUJOCO_GL=egl`（需要 EGL 驱动，本工作区已在 WSL 上验证）；纯软件环境可改用 `osmesa`。
 
 `src/train/` 下放置 `COLCON_IGNORE`，防止在仓库根目录执行 colcon 时扫描到这些 Python 包。所有命令的输出写入仓库根目录 `output/<实验名>/`，并且要求输出目录为空，避免覆盖已有实验。
 

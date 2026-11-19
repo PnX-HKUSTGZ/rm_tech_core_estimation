@@ -63,6 +63,8 @@ uv run python -m tech_core_data_generator mujoco --out ../../output/exp/dev \
 uv run python -m tech_core_data_generator preview --backend blender --state ready --team red --out ../../output/preview
 ```
 
+`blender --appearance random` 为默认策略；`--appearance default` 使用固定的参考场景外观。
+
 `--exclude` 指定已有数据目录，新生成的相机位姿不得与其重复，保证验收集是真正的留出集。默认相机为 320×240、垂直视场 1.047 rad；视角以 E 点为中心按球坐标采样，范围如下：
 
 | 分布 | 距离 r | 方位角 | 仰角 |
