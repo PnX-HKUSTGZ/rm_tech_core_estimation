@@ -29,8 +29,10 @@ uv run python -m tech_core_model_train keypoints --data ../../output/exp/train -
 uv run python -m tech_core_model_train finetune  --data ../../output/exp/train --initial ../../output/exp/lite18/best.pt \
   --dev-data ../../output/exp/dev --detector ../../output/exp/detect --out ../../output/exp/finetune --learning-rate 1e-4
 uv run python -m tech_core_model_train pose      --data ../../output/exp/train --out ../../output/exp/pose --size n   # 对照
-uv run python -m tech_core_model_train evaluate  --data ../../output/exp/accept --detector ... --keypoints ... --keypoint-threshold 0.25 --out ...
-uv run python -m tech_core_model_train export    --detector ... --keypoints ... --evaluation ... --out ../../output/exp/release
+uv run python -m tech_core_model_train evaluate  --data ../../output/exp/accept --detector ../../output/exp/detect \
+  --keypoints ../../output/exp/finetune --out ../../output/exp/evaluation
+uv run python -m tech_core_model_train export    --detector ../../output/exp/detect --keypoints ../../output/exp/finetune \
+  --evaluation ../../output/exp/evaluation --out ../../output/exp/release --verify
 ```
 
 每个训练命令都在输出目录写 `experiment.yaml`，记录几何指纹、数据 manifest 的 SHA-256、超参数、种子、依赖版本和所选轮次。加载数据或权重时，若几何指纹不一致则拒绝运行。
@@ -42,7 +44,9 @@ uv run python -m tech_core_model_train export    --detector ... --keypoints ... 
 - **选择与验收分离**：轮次和关键点门限只能在 Blender val 或 MuJoCo 开发集上选择，先写出 `selection.yaml`，再运行测试推理。最终验收集要在模型、门限冻结之后用新种子生成（见 data_generator `--exclude`）；验收集一旦参与调参，就降级为开发集。
 - **报告内容**：检测召回 / 精确率（IoU ≥ 0.5）、PCK@5px、解算率、达标率（附 Wilson 区间）、已解算帧的平移 / 旋转误差中位数与 P95、单帧端到端耗时，以及逐帧失败分类（无框 / 有框未解算 / 已解算超差）。Blender 与 MuJoCo 的结果分开报告。
 
-参考 PnP 移植自 demo 的 `tech_core_keypoint_pos_estimation` 0.3.0：具名匹配，RANSAC + AP3P + SQPnP + IPPE 生成候选，LM 内点重拟合，Huber 细化；默认阈值 3 pixel，最少 4 个非退化内点。它既是评价基准，也是部署端 C++ 实现的数值参照。
+`evaluate` 自动读取微调目录的 `selection.yaml`。对于初训模型和 `--pose` 对照模型，在 Blender 数据上评价时默认用 val 选门限；独立验收时传入此前生成的 `--selection` 或预先确定的 `--keypoint-threshold`。逐帧预测与分域汇总分别保存在 `frames.yaml` 和 `summary.yaml`。
+
+参考 PnP 移植自 demo 的 `tech_core_keypoint_pos_estimation` 0.3.0，按几何契约的点序对齐，以 RANSAC + AP3P + SQPnP + IPPE 生成候选，LM 内点重拟合，Huber 细化；默认阈值 3 pixel，最少 4 个非退化内点。它既是评价基准，也是部署端 C++ 实现的数值参照。
 
 ## 模型交付契约
 
@@ -60,10 +64,10 @@ uv run python -m tech_core_model_train export    --detector ... --keypoints ... 
 | `schema_version` | 契约版本号 |
 | `geometry` | 完整几何契约（点名、分组、核心系坐标 m）及其 SHA-256 |
 | `detector` | 输入尺寸、通道顺序 RGB、letterbox 参数、归一化方式、框置信度门限 0.25 |
-| `keypoints` | 裁剪尺寸 256、扩框系数 1.25、热图尺寸 128、均值 / 标准差、关键点门限 0.25、置信度计算方式（sigmoid(logit) × 热图峰值） |
+| `keypoints` | 裁剪尺寸 256、扩框系数 1.25、热图尺寸 128、均值 / 标准差、冻结的关键点门限（如 0.25）、置信度计算方式（sigmoid(logit) × 热图峰值） |
 | `provenance` | 训练所用 `experiment.yaml` 的 SHA-256、验收结果摘要、导出时间 |
 
-门限随模型冻结，部署端不提供覆盖参数。`export --verify` 用 ONNX Runtime 在 `golden/` 上复算，要求关键点像素与 PyTorch 的最大偏差 < 0.5 pixel，否则导出失败。部署端用 `golden/` 做 C++ 推理和 PnP 的回归测试。
+门限随模型冻结，部署端不提供覆盖参数。`export --verify` 用 ONNX Runtime 在 `golden/` 上复算，要求关键点像素与 PyTorch 的最大偏差 < 0.5 pixel，否则导出失败。金标准图像中没有任何检出时校验失败，此时需要更长的训练。部署端用 `golden/` 做 C++ 推理和 PnP 的回归测试。
 
 ## 依赖与许可
 
@@ -76,11 +80,9 @@ Ultralytics 8.3.228（AGPL-3.0）、PyTorch 2.7 + CUDA 12.8、mmengine 0.10.7、
 | `labels.py`（YOLO 标签、YAML、裁剪） | `tech_core_dataset/data.py:yolo_label`、`tech_core_dataset/inference.py` |
 | `yolo.py`（检测 / pose 训练与推理） | `tech_core_yolo_pose/`、`tech_core_yolo_litenet/__main__.py` |
 | `litehrnet/`（模型、训练、微调、两阶段推理、vendor） | `tech_core_yolo_litenet/{model,train,finetune,predict}.py`、`vendor/` |
-| `pnp/` | `tech_core_keypoint_pos_estimation/{pose,schema}.py` |
-| `evaluate.py`、`acceptance.py` | `tech_core_dataset/evaluate.py`、`tech_core_yolo_litenet/{benchmark,acceptance}.py` |
+| `pnp.py` | `tech_core_keypoint_pos_estimation/{pose,schema}.py` |
+| `evaluate.py` | `tech_core_dataset/evaluate.py`、`tech_core_yolo_litenet/{benchmark,acceptance}.py` |
 | `export.py` | 新增 |
-
-demo 中当前推荐的权重为 `output/learned-keypoints/detect/yolo11n/weights/best.pt` 和 `output/lite18-augmentation/domain-finetune/best.pt`，可以直接用于第一次 `export`。
 
 ## 测试
 

@@ -2,17 +2,20 @@
 name = "tech-core-training"
 version = "0.1.0"
 requires-python = "==3.12.*"
-dependencies = ["tech-core-data-generator", "tech-core-data-enhancement"]
+dependencies = ["tech-core-data-generator", "tech-core-data-enhancement", "tech-core-model-train"]
 
 [tool.uv]
 package = false
 
 [tool.uv.workspace]
-members = ["data_generator", "data_enhancement"]
+members = ["data_generator", "data_enhancement", "model_train"]
 
 [tool.uv.sources]
 tech-core-data-generator = { workspace = true }
 tech-core-data-enhancement = { workspace = true }
+tech-core-model-train = { workspace = true }
+torch = { index = "pytorch-cu128" }
+torchvision = { index = "pytorch-cu128" }
 
 [[tool.uv.index]]
 name = "pytorch-cu128"
