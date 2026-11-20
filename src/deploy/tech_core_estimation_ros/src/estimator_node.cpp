@@ -64,16 +64,22 @@ EstimatorNode::EstimatorNode(const rclcpp::NodeOptions & options)
 void EstimatorNode::onFrame(const Image::ConstSharedPtr & image, const CameraInfo::ConstSharedPtr & info)
 {
   ++frames_;
+  if (image->header.stamp.sec == 0 && image->header.stamp.nanosec == 0) {
+    ++invalid_stamp_;
+    return;
+  }
   namespace distortion = sensor_msgs::distortion_models;
   if (!info->distortion_model.empty() && info->distortion_model != distortion::PLUMB_BOB &&
       info->distortion_model != distortion::RATIONAL_POLYNOMIAL) {
     ++invalid_calibration_;
     return;
   }
-  if (!calibration_ || info->k != calibration_->k || info->d != calibration_->d) {
-    calibration_ = info;
+  const auto camera = intrinsics(*info);
+  if (!calibration_ || camera.camera_matrix != calibration_->camera_matrix ||
+      camera.distortion != calibration_->distortion) {
+    calibration_ = camera;
     std::string error;
-    estimator_ = pnp::PnPEstimator::create(keypoints_, intrinsics(*info), config_, error);
+    estimator_ = pnp::PnPEstimator::create(keypoints_, camera, config_, error);
     if (!estimator_) {
       RCLCPP_ERROR(get_logger(), "Cannot create PnP estimator: %s", error.c_str());
     }
@@ -108,7 +114,7 @@ void EstimatorNode::onFrame(const Image::ConstSharedPtr & image, const CameraInf
     solve_s_ = 0.0;
   }
   if (debug_pub_->get_subscription_count() > 0) {
-    debug_pub_->publish(debugImage(*bgr, output, model_->geometry(), *info, estimate));
+    debug_pub_->publish(debugImage(*bgr, output, model_->geometry(), camera, estimate));
   }
 }
 
@@ -153,6 +159,7 @@ void EstimatorNode::diagnostics(diagnostic_updater::DiagnosticStatusWrapper & st
   status.add("frame_rate_hz", received / elapsed);
   status.add("published", published_);
   status.add("no_detection", no_detection_);
+  status.add("invalid_stamp", invalid_stamp_);
   status.add("invalid_calibration", invalid_calibration_);
   status.add("invalid_image", invalid_image_);
   status.add("tf_timeout", tf_timeout_count_);

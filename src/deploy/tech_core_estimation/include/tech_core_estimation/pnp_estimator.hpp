@@ -87,6 +87,7 @@ public:
    * @brief 根据一帧有效观测解算核心系在相机光学系中的位姿。
    * @param[in] observation 原图观测，坐标单位 pixel。
    * @pre pixels 和 valid 的长度均等于模型点数，顺序与模型一致。
+   * @note 至少 4 个非共线观测的重投影误差须小于或等于配置的内点半径。
    * @return 解算状态、位姿（平移单位 m）、内点及重投影诊断（单位 pixel）。
    */
   PoseEstimate estimate(const Observation & observation) const;

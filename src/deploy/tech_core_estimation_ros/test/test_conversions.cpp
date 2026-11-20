@@ -21,6 +21,22 @@ TEST(Conversions, ReadsRowMajorRawIntrinsicsAndDistortion)
   EXPECT_EQ(camera.distortion, info.d);
 }
 
+TEST(Conversions, AppliesRoiBeforeBinningInEachAxis)
+{
+  sensor_msgs::msg::CameraInfo info;
+  info.k = {300., 0., 162., 0., 360., 120., 0., 0., 1.};
+  info.roi.x_offset = 22;
+  info.roi.y_offset = 15;
+  info.binning_x = 2;
+  info.binning_y = 3;
+  info.d = {-0.2, 0.1, 0.002, -0.003, 0.01};
+  const auto camera = intrinsics(info);
+  Eigen::Matrix3d expected;
+  expected << 150., 0., 70., 0., 120., 35., 0., 0., 1.;
+  EXPECT_EQ(camera.camera_matrix, expected);
+  EXPECT_EQ(camera.distortion, info.d);
+}
+
 TEST(Conversions, SharesBgrAndReordersRgb)
 {
   auto image = std::make_shared<sensor_msgs::msg::Image>();
@@ -100,7 +116,7 @@ TEST(Conversions, DrawsDetectionValidLandmarksAndDistortedReprojectionsOnCopy)
   tech_core_estimation::PoseEstimate estimate;
   estimate.failure = tech_core_estimation::PoseFailure::kNone;
   estimate.camera_from_core.translation().z() = 1.0;
-  const auto overlay = bgrImage(debugImage(input, output, geometry, info, estimate));
+  const auto overlay = bgrImage(debugImage(input, output, geometry, intrinsics(info), estimate));
   EXPECT_EQ(overlay->header, input.header);
   EXPECT_EQ(overlay->image.at<cv::Vec3b>(6, 4), cv::Vec3b(0, 255, 0));
   EXPECT_EQ(overlay->image.at<cv::Vec3b>(12, 15), cv::Vec3b(0, 255, 255));

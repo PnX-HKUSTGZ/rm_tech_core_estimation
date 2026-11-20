@@ -31,7 +31,7 @@ bool positiveDepth(const Correspondences & observations, const Pose & pose)
 
 /** @brief 计算原图残差，并确定当前位姿的支持集。 */
 Fit evaluate(const Correspondences & observations, const Calibration & camera, const Pose & pose,
-             double threshold, bool robust)
+             double threshold)
 {
   std::vector<cv::Point2d> projected;
   cv::projectPoints(observations.points, pose.rotation, pose.translation, camera.matrix,
@@ -40,7 +40,7 @@ Fit evaluate(const Correspondences & observations, const Calibration & camera, c
   for (size_t i = 0; i < projected.size(); ++i) {
     const double residual = cv::norm(projected[i] - observations.pixels[i]);
     fit.residuals.push_back(residual);
-    if (!robust || residual <= threshold) {
+    if (residual <= threshold) {
       fit.inliers.push_back(static_cast<int>(i));
     }
   }
@@ -107,7 +107,7 @@ std::vector<Fit> refineSeeds(const Correspondences & observations, const Calibra
         break;
       }
       saw_positive_depth = true;
-      auto fit = evaluate(observations, camera, pose, config.reprojection_threshold, robust);
+      auto fit = evaluate(observations, camera, pose, config.reprojection_threshold);
       if (fit.inliers.size() < 4) {
         break;
       }
@@ -159,7 +159,7 @@ void refineHuber(const Correspondences & observations, const Calibration & camer
       break;
     }
   }
-  auto final = evaluate(observations, camera, pose, threshold, true);
+  auto final = evaluate(observations, camera, pose, threshold);
   if (final.inliers.size() >= 4 && noncollinear(observations.subset(final.inliers))) {
     best = std::move(final);
   }

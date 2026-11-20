@@ -50,6 +50,7 @@ private:
    * @brief 处理一帧原始图像及其时间匹配的相机光学系标定。
    * @param[in] image 原始 RGB8 或 BGR8 相机图像，坐标单位 pixel。
    * @param[in] info 同一时间戳的原始针孔标定，焦距与主点单位 pixel。
+   * @note 零时间戳帧在推理前丢弃，计入 invalid_stamp。
    */
   void onFrame(const Image::ConstSharedPtr & image, const CameraInfo::ConstSharedPtr & info);
 
@@ -69,7 +70,7 @@ private:
   std::unique_ptr<tech_core_estimation_model::TechCoreModel> model_;  ///< 本图像流加载的发布目录。
   tech_core_estimation::KeypointModel keypoints_;  ///< 发布目录中的核心系关键点，单位 m。
   tech_core_estimation::PnPConfig config_;  ///< 启动时读取的 PnP 参数。
-  CameraInfo::ConstSharedPtr calibration_;  ///< 最近一次提交给解算器工厂的内参矩阵与畸变参数。
+  std::optional<tech_core_estimation::CameraIntrinsics> calibration_;  ///< 最近提交给解算器的有效内参与畸变系数。
   std::optional<tech_core_estimation::PnPEstimator> estimator_;  ///< 对应该标定的解算器；创建失败时为空。
   std::string world_frame_;  ///< 机械臂基座（世界系）的 TF frame。
   std::string core_frame_;  ///< 输出 TF 的子 frame。
@@ -84,6 +85,7 @@ private:
   std::uint64_t frames_ = 0;  ///< 同步输入对计数。
   std::uint64_t published_ = 0;  ///< 已发布的世界系位姿计数。
   std::uint64_t no_detection_ = 0;  ///< 未检出核心的图像计数。
+  std::uint64_t invalid_stamp_ = 0;  ///< 图像采集时间戳为零的帧计数。
   std::uint64_t invalid_calibration_ = 0;  ///< 无可用针孔标定的帧计数。
   std::uint64_t invalid_image_ = 0;  ///< 图像转换失败的帧计数。
   std::uint64_t tf_timeout_count_ = 0;  ///< 解算成功但缺少相机变换的计数。

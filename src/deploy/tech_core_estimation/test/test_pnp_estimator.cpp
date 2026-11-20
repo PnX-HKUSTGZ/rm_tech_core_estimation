@@ -83,6 +83,16 @@ TEST_F(PnPTest, FourUsableNonplanarPoints)
   EXPECT_EQ(solver->estimate(obs).failure, PoseFailure::kTooFewPoints);
 }
 
+TEST_F(PnPTest, FourPointsWithOneOutlierLoseConsensus)
+{
+  auto obs = project();
+  obs.valid = {true, true, true, true, false, false, false, false};
+  obs.pixels[3] += Eigen::Vector2d(80., -60.);
+  const auto solver = PnPEstimator::create(model, camera, {}, error);
+  ASSERT_TRUE(solver) << error;
+  EXPECT_EQ(solver->estimate(obs).failure, PoseFailure::kNoConsensus);
+}
+
 TEST_F(PnPTest, RejectsDegenerateCorrespondences)
 {
   auto obs = project();

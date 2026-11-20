@@ -121,7 +121,7 @@ def test_partial_geometry_and_split_boundaries(holdout, tmp_path):
         load_manifest(tmp_path)
 
 
-def test_blender_splits_random_and_studio_appearance(tmp_path):
+def test_blender_splits_random_and_studio_appearance(tmp_path, require_blender):
     """@brief 固定源视角与灯光时刻，切换影棚策略。"""
     args = [
         "blender",

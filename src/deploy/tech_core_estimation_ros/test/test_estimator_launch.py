@@ -95,8 +95,9 @@ class TestCameraStream(unittest.TestCase):
             self.assertLess(time.monotonic(), deadline, description)
             rclpy.spin_once(self.node, timeout_sec=0.05)
 
-    def send(self, frame, case, optical_frame='camera_optical'):
-        stamp = self.node.get_clock().now()
+    def send(self, frame, case, optical_frame='camera_optical', stamp=None):
+        if stamp is None:
+            stamp = self.node.get_clock().now()
         image = self.bridge.cv2_to_imgmsg(frame, encoding='bgr8')
         image.header.stamp = stamp.to_msg()
         image.header.frame_id = optical_frame
@@ -107,12 +108,12 @@ class TestCameraStream(unittest.TestCase):
         self.image_pub.publish(image)
         return stamp.nanoseconds
 
-    def expect_failure(self, frame, case, reasons, optical_frame='camera_optical'):
+    def expect_failure(self, frame, case, reasons, optical_frame='camera_optical', stamp=None):
         def failures():
             return sum(int(self.counts[reason]) for reason in reasons)
 
         previous = failures()
-        stamp = self.send(frame, case, optical_frame)
+        stamp = self.send(frame, case, optical_frame, stamp)
         self.wait_for(lambda: failures() > previous, f'Diagnostic increment for {reasons}')
         self.assertNotIn(stamp, self.poses)
         self.assertNotIn(stamp, self.transforms)
@@ -154,6 +155,7 @@ class TestCameraStream(unittest.TestCase):
 
         case = next(case for case in cases if case['camera_from_core'] is not None)
         frame = cv2.imread(str(golden / case['image']))
+        self.expect_failure(frame, case, ['invalid_stamp'], stamp=Time())
         self.expect_failure(frame, case, ['tf_timeout'], optical_frame='unconnected_camera_optical')
         self.expect_failure(np.zeros_like(frame), case, ['no_detection'])
         self.expect_failure(frame, {**case, 'camera_matrix': np.zeros((3, 3))}, ['invalid_calibration'])

@@ -20,7 +20,14 @@ cv_bridge::CvImageConstPtr bgrImage(const sensor_msgs::msg::Image::ConstSharedPt
 
 tech_core_estimation::CameraIntrinsics intrinsics(const sensor_msgs::msg::CameraInfo & info)
 {
-  return {Eigen::Map<const Eigen::Matrix<double, 3, 3, Eigen::RowMajor>>(info.k.data()), info.d};
+  Eigen::Matrix3d matrix = Eigen::Map<const Eigen::Matrix<double, 3, 3, Eigen::RowMajor>>(info.k.data());
+  const double bx = info.binning_x ? info.binning_x : 1;
+  const double by = info.binning_y ? info.binning_y : 1;
+  matrix(0, 0) /= bx;
+  matrix(1, 1) /= by;
+  matrix(0, 2) = (matrix(0, 2) - info.roi.x_offset) / bx;
+  matrix(1, 2) = (matrix(1, 2) - info.roi.y_offset) / by;
+  return {matrix, info.d};
 }
 
 tech_core_estimation::Observation observation(const tech_core_estimation_model::ModelOutput & output)
@@ -48,7 +55,7 @@ geometry_msgs::msg::PoseStamped corePose(const geometry_msgs::msg::TransformStam
 sensor_msgs::msg::Image::UniquePtr debugImage(const cv_bridge::CvImage & bgr,
                                              const tech_core_estimation_model::ModelOutput & output,
                                              const tech_core_estimation_model::Geometry & geometry,
-                                             const sensor_msgs::msg::CameraInfo & info,
+                                             const tech_core_estimation::CameraIntrinsics & camera,
                                              const tech_core_estimation::PoseEstimate & estimate)
 {
   auto image = std::make_unique<sensor_msgs::msg::Image>();
@@ -64,12 +71,12 @@ sensor_msgs::msg::Image::UniquePtr debugImage(const cv_bridge::CvImage & bgr,
     }
   }
   if (estimate.failure == tech_core_estimation::PoseFailure::kNone) {
-    cv::Mat rotation, translation;
+    cv::Mat rotation, translation, matrix;
     cv::eigen2cv(Eigen::Matrix3d(estimate.camera_from_core.linear()), rotation);
     cv::eigen2cv(Eigen::Vector3d(estimate.camera_from_core.translation()), translation);
+    cv::eigen2cv(camera.camera_matrix, matrix);
     std::vector<cv::Point2d> projected;
-    cv::projectPoints(geometry.points_m, rotation, translation, cv::Mat(info.k).reshape(1, 3),
-                      info.d, projected);
+    cv::projectPoints(geometry.points_m, rotation, translation, matrix, camera.distortion, projected);
     for (const auto & pixel : projected) {
       cv::drawMarker(overlay, pixel, {255, 0, 255}, cv::MARKER_CROSS, 5);
     }

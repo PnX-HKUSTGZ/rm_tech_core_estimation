@@ -17,7 +17,7 @@
 
 - 只增强 `split == "train"` 的记录。val / test / MuJoCo 数据原样保留，作为评价基准。
 - 增强副本继承原记录的 `source_view` 和 `split`，因此同源图像不会跨越划分。
-- 遮挡后的点标为 `visibility = 1`，移出画面的点标为 `0`；`camera_from_core` 保持不变。
+- 遮挡点和从原图外移入画面的投影点都标为 `visibility = 1`。移出画面或坐标为 `null` 的点标为 `0`。`camera_from_core` 保持不变。
 - 每条输出记录在 `augmentation` 中写明所用操作和参数，在 `source` 中记录原记录 ID，以便复现。
 - 负样本标记为 `negative: true`，`pixels` / `bbox_xyxy` 为 `null`。负样本只用于检测器训练和误检统计，不参与关键点训练。
 

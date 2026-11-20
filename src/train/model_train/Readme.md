@@ -39,14 +39,14 @@ uv run python -m tech_core_model_train export    --detector ../../output/exp/det
 
 ## 评价协议
 
-- **达标判据**：同一帧上，核心系原点的平移误差 ≤ 0.01 m，且旋转测地误差 ≤ 0.0873 rad。漏检、PnP 未解算的帧都计入分母；纯背景上的误检另外统计。
+- **达标判据**：同一帧上，核心系原点的平移误差 ≤ 0.01 m，且旋转测地误差 ≤ 0.0873 rad。漏检、PnP 未解算的目标帧都计入分母。只有评价划分含负样本时才计算纯背景误检率。当前 data_generator / data_enhancement 流程只在 train 划分生成负样本，因此 test、regular、stress 的该指标为 `null`。
 - **推理不使用真值**：真值框、可见性和位姿只用于监督和外部计分。
 - **选择与验收分离**：轮次和关键点门限只能在 Blender val 或 MuJoCo 开发集上选择，先写出 `selection.yaml`，再运行测试推理。最终验收集要在模型、门限冻结之后用新种子生成（见 data_generator `--exclude`）；验收集一旦参与调参，就降级为开发集。
 - **报告内容**：检测召回 / 精确率（IoU ≥ 0.5）、PCK@5px、解算率、达标率（附 Wilson 区间）、已解算帧的平移 / 旋转误差中位数与 P95、单帧端到端耗时，以及逐帧失败分类（无框 / 有框未解算 / 已解算超差）。Blender 与 MuJoCo 的结果分开报告。
 
 `evaluate` 自动读取微调目录的 `selection.yaml`。对于初训模型和 `--pose` 对照模型，在 Blender 数据上评价时默认用 val 选门限；独立验收时传入此前生成的 `--selection` 或预先确定的 `--keypoint-threshold`。逐帧预测与分域汇总分别保存在 `frames.yaml` 和 `summary.yaml`。
 
-参考 PnP（`pnp.py`）按几何契约的点序对齐，以 RANSAC + AP3P + SQPnP + IPPE 生成候选，LM 内点重拟合，Huber 细化；默认阈值 3 pixel，最少 4 个非退化内点。它既是评价基准，也是部署端 C++ 实现的数值参照。
+参考 PnP（`pnp.py`）按几何契约的点序对齐，用 SQPnP 和共面时的 IPPE 生成候选，再做 LM 优化。至少 5 点时还使用 RANSAC 假设、内点重拟合与 Huber 细化。解算要求至少 4 个非共线内点，每个内点的重投影误差 ≤ 3 pixel，因此恰有 4 点时须全部达标。该实现也为部署端 C++ 解算器提供数值参照。
 
 ## 模型交付契约
 

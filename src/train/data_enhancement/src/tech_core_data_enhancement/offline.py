@@ -64,7 +64,7 @@ def augment_record(
     @param[in] identity 新记录 ID。
     @param[in] seed 随机种子，可脱离数据集单独复现该变体。
     @return 派生记录、增强后的 RGB 图像及变换后的二值轮廓（uint8，0/255）。
-    @note 合成遮挡会隐藏关键点，但保留目标投影轮廓。
+    @note 合成遮挡保留目标投影轮廓。被遮挡的点及从原图外移入画面的投影点均标为 1。
     """
     rng = np.random.default_rng(seed)
     height, width = mask.shape
@@ -99,7 +99,7 @@ def augment_record(
         x, y = (scale * np.asarray(point) + offset).tolist()
         if not (0 <= x < width and 0 <= y < height):
             flag = 0
-        elif flag and rect and x0 <= x < x1 and y0 <= y < y1:
+        elif flag == 0 or (rect and x0 <= x < x1 and y0 <= y < y1):
             flag = 1
         pixels.append([x, y])
         visibility.append(flag)

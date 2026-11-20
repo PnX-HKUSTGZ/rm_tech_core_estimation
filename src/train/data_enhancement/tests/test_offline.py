@@ -108,6 +108,17 @@ def test_occluded_outside_and_behind_camera():
     assert record["pixels"][-1] is None and record["visibility"][-1] == 0
 
 
+def test_outside_point_moved_inside_is_occluded():
+    """@brief 源图左边界外的投影随仿射变换进入画面后标为遮挡。"""
+    frame = _frame()
+    source = frame.to_record("original", "train", "view")
+    source["pixels"][0], source["visibility"][0] = [-1.0, 36.0], 0
+    record, _, _ = augment_record(source, frame.rgb, frame.mask, "variant", 1)
+    x, y = record["pixels"][0]
+    assert 0 <= x < frame.camera.width and 0 <= y < frame.camera.height
+    assert record["visibility"][0] == 1
+
+
 def test_split_provenance_negatives_and_repeatability(dataset, tmp_path):
     """@brief 重复完整 CLI 运行，逐一比对 PNG、记录与日志是否与首次一致。"""
     first, second = tmp_path / "first", tmp_path / "second"

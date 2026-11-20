@@ -33,7 +33,7 @@ def estimate(model, pixels, valid, camera_matrix, distortion=None):
     @param[in] valid 经置信度与图像边界过滤后的逐点观测掩码。
     @param[in] camera_matrix 原始针孔相机内参，单位 pixel。
     @param[in] distortion 标准 OpenCV 畸变参数；针孔相机为 None。
-    @return 齐次 camera_from_core（平移单位 m）；不可解帧返回 None。
+    @return 齐次 camera_from_core（平移单位 m），不可解帧返回 None。解算要求至少 4 个非共线内点。
     """
     pixels = np.asarray(pixels, dtype=np.float64)
     valid = np.asarray(valid, dtype=bool) & np.isfinite(pixels).all(axis=1)
@@ -81,7 +81,7 @@ def estimate(model, pixels, valid, camera_matrix, distortion=None):
             if not _positive_depth(obj, rvec, tvec):
                 break
             residual = _residuals(obj, img, camera, dist, rvec, tvec)
-            inliers = np.flatnonzero(residual <= threshold) if robust else np.arange(len(obj))
+            inliers = np.flatnonzero(residual <= threshold)
             consistent = len(inliers) >= 4 and _noncollinear(obj[inliers]) and _noncollinear(img[inliers])
             if not consistent:
                 break

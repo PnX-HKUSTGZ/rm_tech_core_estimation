@@ -1,9 +1,14 @@
-"""裁剪与 letterbox 坐标契约。"""
+"""关键点预测与图像坐标契约。"""
+
+from unittest.mock import patch
 
 import numpy as np
+import torch
+from ultralytics.engine.results import Results
 
 from tech_core_model_train.litehrnet.predict import best_box, letterbox
 from tech_core_model_train.prediction import restore_points, square_crop
+from tech_core_model_train.yolo import YoloPosePredictor
 
 
 def test_padded_crop_round_trip():
@@ -29,3 +34,17 @@ def test_odd_letterbox_padding_and_top_candidate():
     box, score = best_box(candidates, gain, pad, 100, 51)
     np.testing.assert_allclose(box, [6, 5, 14, 15])
     assert score == 0.9
+
+
+def test_yolo_pose_discards_points_clipped_to_any_edge():
+    """@brief 四条边上的夹取坐标无效，靠近边界的画内预测保留置信度。"""
+    rgb = np.zeros((40, 60, 3), np.uint8)
+    points = torch.tensor([[[0, 15, 0.9], [25, 0, 0.9], [60, 15, 0.9], [25, 40, 0.9], [0.1, 39.9, 0.7]]])
+    boxes = torch.tensor([[0, 0, 60, 40, 0.9, 0]])
+    result = Results(rgb, path="frame", names={0: "core"}, boxes=boxes, keypoints=points)
+    with patch("tech_core_model_train.yolo.load_yolo") as load:
+        load.return_value.ckpt = {"train_args": {"imgsz": 320}}
+        load.return_value.predict.return_value = [result]
+        prediction = YoloPosePredictor("unused.pt").predict(rgb)
+    np.testing.assert_allclose(prediction.confidence, [0, 0, 0, 0, 0.7])
+    np.testing.assert_array_equal(prediction.valid(60, 40, 0.25), [False, False, False, False, True])

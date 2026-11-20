@@ -128,7 +128,7 @@ class YoloPosePredictor:
         """@brief 仅用 RGB 推理原图检测框与有序 XY 关键点（单位 pixel）。
 
         @param[in] rgb 原始 RGB8 图像。
-        @return 原图坐标下的预测，单位 pixel。
+        @return 原图坐标下的预测（单位 pixel），落在裁剪边界上的关键点置信度为零。
         """
         result = self.model.predict(
             np.ascontiguousarray(rgb[:, :, ::-1]),
@@ -142,4 +142,9 @@ class YoloPosePredictor:
             return Prediction.missing()
         i = int(result.boxes.conf.argmax())
         points = result.keypoints.data[i].cpu().numpy()
-        return Prediction(result.boxes.xyxy[i].cpu().numpy(), float(result.boxes.conf[i]), points[:, :2], points[:, 2])
+        pixels = points[:, :2]
+        height, width = rgb.shape[:2]
+        # Ultralytics 将图外点夹到边界，在边界上无法区分原始预测的位置。
+        interior = ((pixels > 0) & (pixels < [width, height])).all(axis=1)
+        confidence = np.where(interior, points[:, 2], 0.0)
+        return Prediction(result.boxes.xyxy[i].cpu().numpy(), float(result.boxes.conf[i]), pixels, confidence)

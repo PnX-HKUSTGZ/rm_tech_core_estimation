@@ -24,9 +24,9 @@ namespace tech_core_estimation_ros
 cv_bridge::CvImageConstPtr bgrImage(const sensor_msgs::msg::Image::ConstSharedPtr & image);
 
 /**
- * @brief 读取相机光学系的原始针孔内参。
- * @param[in] info 行主序相机矩阵（焦距与主点单位 pixel）及畸变参数。
- * @return 原图坐标下的 PnP 内参，单位 pixel。
+ * @brief 根据 ROI 与像素合并因子换算所收原始图像的针孔内参。
+ * @param[in] info 相机光学系全分辨率标定、ROI 偏移（单位 pixel）及各轴合并因子（0 视作 1）。
+ * @return 所收图像的焦距与主点（单位 pixel）及原标定的畸变系数。
  */
 tech_core_estimation::CameraIntrinsics intrinsics(const sensor_msgs::msg::CameraInfo & info);
 
@@ -53,14 +53,14 @@ geometry_msgs::msg::PoseStamped corePose(const geometry_msgs::msg::TransformStam
  * @param[in] bgr BGR8 相机图像，原图坐标，单位 pixel。
  * @param[in] output 检测框与关键点观测，单位 pixel。
  * @param[in] geometry 发布目录中的核心系关键点，单位 m。
- * @param[in] info 原始相机标定，焦距与主点单位 pixel。
+ * @param[in] camera PnP 使用的相机光学系标定，焦距与主点以所收图像的 pixel 为单位。
  * @param[in] estimate 相机光学系中的 PnP 结果，平移单位 m。
  * @return 带输入时间戳与相机光学系 frame_id 的 BGR8 调试图像。
  */
 sensor_msgs::msg::Image::UniquePtr debugImage(const cv_bridge::CvImage & bgr,
                                              const tech_core_estimation_model::ModelOutput & output,
                                              const tech_core_estimation_model::Geometry & geometry,
-                                             const sensor_msgs::msg::CameraInfo & info,
+                                             const tech_core_estimation::CameraIntrinsics & camera,
                                              const tech_core_estimation::PoseEstimate & estimate);
 
 }  // namespace tech_core_estimation_ros

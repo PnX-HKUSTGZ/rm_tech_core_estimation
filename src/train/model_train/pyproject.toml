@@ -5,7 +5,7 @@ requires-python = "==3.12.*"
 license-files = ["src/tech_core_model_train/litehrnet/vendor/LICENSE-*.txt"]
 dependencies = [
     "tech-core-data-generator", "tech-core-data-enhancement", "torch==2.7.1", "torchvision==0.22.1",
-    "ultralytics==8.3.228", "mmengine==0.10.7", "mmcv-lite==2.2.0", "opencv-python-headless",
+    "ultralytics==8.3.228", "mmengine==0.10.7", "mmcv-lite==2.2.0", "opencv-python",
     "onnx", "onnxruntime", "pyyaml",
 ]
 

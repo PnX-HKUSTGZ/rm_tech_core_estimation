@@ -4,7 +4,7 @@ frame: model_core_reference_nominal_E
 units: metres
 source: Rule Fig.5-9 lengths plus user-confirmed coplanarity/symmetry and an explicit existing-model reference.
 shell_construction:
-  method: Normalize the model shoulder direction, scale to the rule 98 mm length, mirror in Y, then drop 74 mm along -Z.
+  method: Normalize the model shoulder direction, scale to the rule 0.098 m length, mirror in Y, then drop 0.074 m along -Z.
   rule_source: {document: RoboMaster 2027 competition rules V1.0.0 (20261015), figure: 5-9, printed_page: 81, pdf_page: 82}
   rule_lengths_m: {shoulder: 0.098, vertical_drop: 0.074}
   user_confirmed_constraints: [shell points are coplanar, shell bilateral symmetry]

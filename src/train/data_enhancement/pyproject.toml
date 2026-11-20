@@ -2,7 +2,7 @@
 name = "tech-core-data-enhancement"
 version = "0.1.0"
 requires-python = "==3.12.*"
-dependencies = ["numpy", "opencv-python-headless", "pyyaml", "tech-core-data-generator"]
+dependencies = ["numpy", "opencv-python", "pyyaml", "tech-core-data-generator"]
 
 [tool.uv.sources]
 tech-core-data-generator = { workspace = true }

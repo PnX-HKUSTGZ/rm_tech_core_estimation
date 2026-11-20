@@ -1,8 +1,5 @@
 """基于真实离屏渲染器的集成测试。"""
 
-import os
-import shutil
-
 import numpy as np
 import pytest
 from PIL import Image
@@ -19,10 +16,8 @@ def mujoco_sim():
 
 
 @pytest.fixture(scope="module")
-def blender_sim():
+def blender_sim(require_blender):
     """@brief 多帧共用一个 Cycles 场景，测试其持久状态。"""
-    if not os.getenv("BLENDER_EXECUTABLE") and not shutil.which("blender"):
-        pytest.skip("Blender is absent")
     with TechCoreSimulator("blender", blender_samples=2) as simulator:
         yield simulator
 
