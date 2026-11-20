@@ -17,7 +17,7 @@ namespace tech_core_estimation_model
 namespace
 {
 
-const std::filesystem::path release(TECH_CORE_GOLDEN_DIR);  ///< 被测的 T4 发布目录。
+const std::filesystem::path release(TECH_CORE_GOLDEN_DIR);  ///< 被测的发布目录。
 
 TEST(Golden, ReplaysEveryPyTorchFrame)
 {
@@ -79,7 +79,7 @@ protected:
   /** @brief 创建唯一命名的临时目录并读入原始元数据。 */
   void SetUp() override
   {
-    std::string pattern = (::testing::TempDir() / std::filesystem::path("t5-release-XXXXXX")).string();
+    std::string pattern = (::testing::TempDir() / std::filesystem::path("tech-core-release-XXXXXX")).string();
     ASSERT_NE(mkdtemp(pattern.data()), nullptr);
     directory = pattern;
     meta = YAML::LoadFile((release / "model_meta.yaml").string());

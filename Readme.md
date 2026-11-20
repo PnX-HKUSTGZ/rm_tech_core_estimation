@@ -2,7 +2,7 @@
 
 RoboMaster 2027 科技核心位姿识别的完整方案：仿真生成数据、数据增强、模型训练，以及实车 C++ 部署。输入一帧 RGB 图像和相机标定，输出科技核心在世界系中的位姿。
 
-技术路线已在 [ref/rm27_tech_core_estimation_demo](ref/rm27_tech_core_estimation_demo/README.md) 中验证：YOLO11n 检测 → LiteHRNet-18 识别 16 个具名关键点 → PnP。在仿真 MuJoCo 常规视角上，493/512 帧满足平移误差 ≤ 0.01 m 且旋转误差 ≤ 0.0873 rad；目前尚无实拍验收。本仓库把 demo 整理为可维护的训练与部署代码，demo 仅作参考，不再修改。
+技术路线：YOLO11n 检测 → LiteHRNet-18 识别 16 个具名关键点 → PnP。达标判据为同一帧平移误差 ≤ 0.01 m 且旋转误差 ≤ 0.0873 rad（见 [model_train 评价协议](src/train/model_train/Readme.md#评价协议)）。目前只有仿真评价，尚无实拍验收。
 
 ## 模块与数据流
 
@@ -14,8 +14,8 @@ flowchart LR
         G -->|manifest.yaml 验证集| T
     end
     subgraph deploy [src/deploy · C++ · colcon]
-        M[tech_core_estimation_model<br/>OpenVINO / TensorRT 推理]
-        P[tech_core_estimation<br/>PnP 位姿解算与追踪]
+        M[tech_core_estimation_model<br/>OpenVINO 推理]
+        P[tech_core_estimation<br/>PnP 位姿解算]
         R[tech_core_estimation_ros<br/>ROS 2 节点]
         R --> M
         R --> P
@@ -27,8 +27,6 @@ flowchart LR
 |---|---|---|
 | [src/train](src/train/Readme.md) | 数据生成、增强、训练、评价，交付 ONNX 模型 | Python 3.12，uv 工作区 |
 | [src/deploy](src/deploy/Readme.md) | 模型推理、位姿解算、ROS 2 封装 | C++17，colcon（ament_cmake） |
-| [ref](ref/rm27_tech_core_estimation_demo/README.md) | 已完成的技术验证 demo，迁移代码时的来源 | 只读 |
-| [processing](processing/) | 任务进度记录 | — |
 
 ## 跨模块契约
 
@@ -44,8 +42,8 @@ flowchart LR
 
 ## 已知边界
 
-- 关键点坐标位于模型的名义核心系；模型原点与规则手册 E 点之间尚未进行实物标定，这一点继承自 demo。
+- 关键点坐标位于模型的名义核心系；模型原点与规则手册 E 点之间尚未进行实物标定。
 - 训练数据全部来自仿真，未包含实拍图像或真实镜头畸变。
 - 当前仅支持单目标、marker 处于静止初态的情形。
 
-`output/`（数据、权重、评价结果）及 `build/`、`install/`、`log/`、`.venv/` 均不纳入版本管理。
+`output/`（数据、权重、评价结果）、`processing/`（任务进度记录）及 `build/`、`install/`、`log/`、`.venv/` 均不纳入版本管理。

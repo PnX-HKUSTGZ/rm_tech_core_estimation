@@ -1,4 +1,4 @@
-"""@brief 下标对齐的参考 PnP。数值方法来自 demo 的 pose.py（见 THIRD_PARTY_NOTICES.md）。"""
+"""@brief 下标对齐的参考 PnP。"""
 
 from dataclasses import dataclass, field
 from threading import Lock

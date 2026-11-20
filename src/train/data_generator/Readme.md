@@ -24,7 +24,7 @@
 | 5–14 | marker | 静止初态 marker 的 10 个角点 |
 | 15 | pillar | 中心轴与可见端盖表面的交点 |
 
-坐标单位为 m，位于核心系。目前使用的是模型原点，与规则 E 点的偏差尚未标定，详见 demo 中的[点集说明](../../../ref/rm27_tech_core_estimation_demo/tech_core_keypoint_pos_estimation/EVALUATION.md)。
+坐标单位为 m，位于核心系。目前使用的是模型原点，与规则 E 点的偏差尚未经过实物标定。
 
 `geometry_contract()` 返回 profile、点名、点序、分组和坐标；`geometry_sha256()` 返回它的指纹。其他模块只能通过这两个函数读取几何，不得复制坐标。修改点集或坐标会改变指纹，旧数据和旧权重随之失效，需要重新生成和训练。
 
@@ -75,17 +75,6 @@ uv run python -m tech_core_data_generator preview --backend blender --state read
 
 这是实验采用的采样分布，并不覆盖全部比赛情形。
 
-## 迁移来源
-
-| 本包模块 | demo 来源 |
-|---|---|
-| `sim/`（几何、相机、灯效、帧、Blender / MuJoCo 后端）、`models/` | `tech_core_sim/`、`models/tech_core/` |
-| `keypoints.yaml` | `tech_core_sim/keypoints.json`，内容不变，转写为 YAML；几何指纹随之重新计算 |
-| `appearance.py` | `tech_core_sim/appearance.py`、`tech_core_dataset/domain_data.py:sample_appearance` |
-| `dataset.py`（划分、manifest、几何契约） | `tech_core_dataset/data.py` 中不含增强与标签的部分、`domain_data.py`、`tech_core_yolo_litenet/holdout.py` |
-
-网格的来源与许可证随 `models/` 一同迁移（`SOURCE.md`、`LICENSE-HKUST.txt`）。
-
 ## 测试
 
-`uv run pytest data_generator`：覆盖灯效状态与频率边界、关键点坐标与指纹、视角采样的可复现性、可见性与遮挡判定、manifest 的划分约束，以及两种后端的轮廓和深度对齐。未安装 Blender 时 Blender 用例显式 skip，验收时需报告 skip 数量。
+`uv run pytest data_generator`：覆盖灯效状态与频率边界、关键点坐标与指纹、视角采样的可复现性、可见性与遮挡判定、manifest 的划分约束，以及两种后端的轮廓和深度对齐。未安装 Blender 时 Blender 用例显式 skip。

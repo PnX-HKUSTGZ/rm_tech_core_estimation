@@ -41,16 +41,9 @@ from tech_core_data_enhancement import photometric
 rgb = photometric(rgb, rng)  # uint8 H×W×3 RGB → 同尺寸；不改变几何
 ```
 
-## 已有结论
+## 调整增强策略
 
-demo 中，在 1024 张 Blender 域随机化图像上，额外的在线光度增强没有带来明显提升（开发集 119 → 121 帧，换用新数据后为 155 帧）。由于数据量、视角范围和训练预算同时改变，这些收益不能单独归因于某一种增强。修改增强策略时，应固定检测器和开发集，只改变增强这一个因素做对照，详见 demo [交接文档](../../../ref/rm27_tech_core_estimation_demo/docs/training-data/README.md)。
-
-## 迁移来源
-
-| 本包模块 | demo 来源 |
-|---|---|
-| `offline.py`（背景、仿射、遮挡、负样本） | `tech_core_dataset/data.py:background`、`augment` |
-| `photometric.py` | `tech_core_yolo_litenet/augmentation.py` |
+修改增强策略时，固定检测器、开发集和训练预算，只改变增强这一个因素做对照；数据量、视角范围与增强同时改变时，收益无法归因于某一种增强。
 
 ## 测试
 

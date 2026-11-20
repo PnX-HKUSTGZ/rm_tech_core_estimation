@@ -67,7 +67,7 @@ struct PoseEstimate
 
 /**
  * @brief 由固定模型与标定解算单帧位姿。
- * @see ref/rm27_tech_core_estimation_demo/tech_core_keypoint_pos_estimation/ALGORITHM_HANDOFF.md
+ * @see src/deploy/tech_core_estimation/Readme.md（单帧解算流程）
  */
 class PnPEstimator
 {

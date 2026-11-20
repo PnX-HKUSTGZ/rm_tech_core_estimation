@@ -58,12 +58,12 @@ public:
 
 ## 后端
 
-从 Intel 官方 APT 源安装 OpenVINO 开发包（`sudo apt install openvino`），CMake 通过 `find_package(OpenVINO)` 查找。`load` 读取两个 ONNX，核对其几何指纹与发布目录中的几何数据，以 FP32 编译，缓存目录为 `<model_dir>/cache/openvino/`。TensorRT 后端计划在后续任务中实现。
+从 Intel 官方 APT 源安装 OpenVINO 开发包（`sudo apt install openvino`），CMake 通过 `find_package(OpenVINO)` 查找。`load` 读取两个 ONNX，核对其几何指纹与发布目录中的几何数据，以 FP32 编译，缓存目录为 `<model_dir>/cache/openvino/`。TensorRT 后端尚未实现。
 
 ## 测试与验收
 
 - **金标准一致性**：对发布目录中 `golden/` 的每张图像，检测与否须与 PyTorch 一致，关键点像素最大偏差 < 0.5 pixel。配置 `-DTECH_CORE_GOLDEN_DIR=<发布目录>` 后构建并运行金标准测试。
-- **耗时**：`tech_core_model_benchmark <model_dir> --backend openvino --device CPU` 在 `golden/` 上统计预热后的单帧耗时中位数与 P95（s），比较时须注明硬件型号。
+- **耗时**：`tech_core_model_benchmark <model_dir> --device CPU` 在 `golden/` 上统计预热后的单帧耗时中位数与 P95（s），比较时须注明硬件型号。
 - **加载失败**：几何指纹不一致、文件缺失、设备编译失败时，`load` 返回 nullptr 并给出可读的错误信息。
 
 ## 依赖

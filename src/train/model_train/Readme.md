@@ -16,7 +16,7 @@
 | 路线 | 流程 | 定位 |
 |---|---|---|
 | 两阶段（部署方案） | RGB → YOLO11n 检测 → 取最高分框，扩为 1.25 倍正方形 → 裁剪并缩放到 256×256 → LiteHRNet-18 → 16 张 128×128 热图 + 16 个画内 logit → 峰值与局部对数二次亚像素细化 → 逆变换回原图 | 唯一导出到部署端的路线 |
-| YOLO11-pose 直接 16 点 | RGB → YOLO11-pose | 对照基线；demo 中 PCK@5px 达 94%，但位姿达标率低，不导出 |
+| YOLO11-pose 直接 16 点 | RGB → YOLO11-pose | 对照基线，不导出 |
 
 LiteHRNet 采用 HKUST ENTERPRIZE 的 LiteHRNet 配置（MMPose 实现，带画内可见性分支），输出由原来的 12 点改为 16 点。训练时使用 Blender 真值框加尺度 / 平移抖动；推理时始终使用检测器预测的框。
 
@@ -46,7 +46,7 @@ uv run python -m tech_core_model_train export    --detector ../../output/exp/det
 
 `evaluate` 自动读取微调目录的 `selection.yaml`。对于初训模型和 `--pose` 对照模型，在 Blender 数据上评价时默认用 val 选门限；独立验收时传入此前生成的 `--selection` 或预先确定的 `--keypoint-threshold`。逐帧预测与分域汇总分别保存在 `frames.yaml` 和 `summary.yaml`。
 
-参考 PnP 移植自 demo 的 `tech_core_keypoint_pos_estimation` 0.3.0，按几何契约的点序对齐，以 RANSAC + AP3P + SQPnP + IPPE 生成候选，LM 内点重拟合，Huber 细化；默认阈值 3 pixel，最少 4 个非退化内点。它既是评价基准，也是部署端 C++ 实现的数值参照。
+参考 PnP（`pnp.py`）按几何契约的点序对齐，以 RANSAC + AP3P + SQPnP + IPPE 生成候选，LM 内点重拟合，Huber 细化；默认阈值 3 pixel，最少 4 个非退化内点。它既是评价基准，也是部署端 C++ 实现的数值参照。
 
 ## 模型交付契约
 
@@ -69,20 +69,9 @@ uv run python -m tech_core_model_train export    --detector ../../output/exp/det
 
 门限随模型冻结，部署端不提供覆盖参数。`export --verify` 用 ONNX Runtime 在 `golden/` 上复算，要求关键点像素与 PyTorch 的最大偏差 < 0.5 pixel，否则导出失败。金标准图像中没有任何检出时校验失败，此时需要更长的训练。部署端用 `golden/` 做 C++ 推理和 PnP 的回归测试。
 
-## 依赖与许可
+## 依赖
 
-Ultralytics 8.3.228（AGPL-3.0）、PyTorch 2.7 + CUDA 12.8、mmengine 0.10.7、mmcv-lite 2.2.0、OpenCV、onnx / onnxruntime。`vendor/litehrnet.py` 保留 MMPose 原实现，许可证随包附带（`THIRD_PARTY_NOTICES.md`）。YOLO 权重及其导出模型受 AGPL-3.0 约束；如需闭源分发，必须先确认许可。
-
-## 迁移来源
-
-| 本包模块 | demo 来源 |
-|---|---|
-| `labels.py`（YOLO 标签、YAML、裁剪） | `tech_core_dataset/data.py:yolo_label`、`tech_core_dataset/inference.py` |
-| `yolo.py`（检测 / pose 训练与推理） | `tech_core_yolo_pose/`、`tech_core_yolo_litenet/__main__.py` |
-| `litehrnet/`（模型、训练、微调、两阶段推理、vendor） | `tech_core_yolo_litenet/{model,train,finetune,predict}.py`、`vendor/` |
-| `pnp.py` | `tech_core_keypoint_pos_estimation/{pose,schema}.py` |
-| `evaluate.py` | `tech_core_dataset/evaluate.py`、`tech_core_yolo_litenet/{benchmark,acceptance}.py` |
-| `export.py` | 新增 |
+Ultralytics 8.3.228、PyTorch 2.7 + CUDA 12.8、mmengine 0.10.7、mmcv-lite 2.2.0、OpenCV、onnx / onnxruntime。
 
 ## 测试
 

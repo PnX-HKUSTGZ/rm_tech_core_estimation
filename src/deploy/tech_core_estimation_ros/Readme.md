@@ -35,7 +35,7 @@ TF: world_from_camera（取图像时间戳）───────────�
 | 参数 | 默认值 | 说明 |
 |---|---|---|
 | `model_dir` | 无（必填） | model_train 导出的发布目录 |
-| `backend` | `openvino` | 当前支持 `openvino`，TensorRT 待模型库提供 |
+| `backend` | `openvino` | 推理后端，目前仅支持 `openvino` |
 | `device` | `CPU` | OpenVINO 设备名 |
 | `world_frame` | `base_link` | 世界系的 frame 名，即机械臂基座系 |
 | `core_frame` | `tech_core` | 核心系的 frame 名 |

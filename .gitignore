@@ -7,3 +7,5 @@ output/
 __pycache__/
 *.egg-info/
 .uv-cache/
+# Ultralytics 在工作目录自动下载的预训练权重
+src/train/*.pt

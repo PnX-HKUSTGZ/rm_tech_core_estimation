@@ -1,12 +1,12 @@
 # tech_core_estimation
 
-科技核心位姿解算库。输入为 16 个关键点的像素观测、核心系三维点和相机标定，输出核心系在相机光学系中的位姿 `camera_from_core` 及诊断信息。第二阶段计划加入世界系下的动态追踪。
+科技核心位姿解算库。输入为 16 个关键点的像素观测、核心系三维点和相机标定，输出核心系在相机光学系中的位姿 `camera_from_core` 及诊断信息。世界系下的动态追踪尚在规划。
 
 ## 职责
 
 | 负责 | 不负责 |
 |---|---|
-| 单帧 PnP：C++ 移植 demo `tech_core_keypoint_pos_estimation` 0.3.0 的完整流程 | 神经网络推理（见 [tech_core_estimation_model](../tech_core_estimation_model/Readme.md)） |
+| 单帧 PnP：与 model_train 的 Python 参考 PnP（`tech_core_model_train.pnp`）流程一致的 C++ 实现 | 神经网络推理（见 [tech_core_estimation_model](../tech_core_estimation_model/Readme.md)） |
 | 处理相机畸变（标准 OpenCV 0/4/5/8/12/14 个系数） | TF 查询与相机外参（由 [tech_core_estimation_ros](../tech_core_estimation_ros/Readme.md) 完成） |
 | 失败分类与诊断：参与点、内点、重投影 RMSE、候选数 | 关键点门限（随模型冻结，由模型库应用） |
 | 世界系动态追踪（规划） | |
@@ -23,7 +23,7 @@
 
 不使用时间滤波和视角先验。平面或接近正视的几何可能存在姿态二义性：重投影误差小并不代表位姿正确。
 
-## 接口（设计）
+## 接口
 
 ```cpp
 namespace tech_core_estimation {
@@ -89,9 +89,9 @@ public:
 
 ## 测试与验收
 
-- **数值一致性**：使用 model_train 导出的 `golden/` 中的观测和标定，每帧的成功 / 失败须与 Python 参考实现一致，成功帧的位姿差异须小于 1e-3 m 和 1e-3 rad。
+- **数值一致性**：`test/data/pnp_cases.yaml` 是由 Python 参考实现生成的 40 个固定回归用例（带畸变，覆盖全部点、离群点、丢点、仅 marker 共面点、4/5/6 点和不可解帧）。每帧的成功 / 失败须与参考一致，成功帧的位姿差异小于 1e-3 m 和 1e-3 rad，内点标记相同，重投影 RMSE 差异小于 1e-4 pixel。
 - **单元用例**：平面与非平面、带畸变、离群点、丢点、少于 4 点、共线退化、无正深度解。
-- **耗时**：16 点单次解算的中位数与 P95（s），不得慢于 Python 参考实现（demo 中位数 0.0022 s，P95 0.0036 s）。
+- **耗时**：16 点单次解算的中位数与 P95（s），不得慢于 Python 参考实现。
 
 ## 依赖
 
