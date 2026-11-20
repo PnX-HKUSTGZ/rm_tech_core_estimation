@@ -1,4 +1,4 @@
-"""@brief Export the fixed two-stage deployment graphs and replay held-out golden frames."""
+"""@brief 导出固定的两阶段部署计算图，并回放留出的金标准帧。"""
 
 import shutil
 from collections import defaultdict
@@ -20,15 +20,15 @@ from .litehrnet.predict import DetectorLitePredictor, best_box, crop_input, deco
 from .pnp import KeypointModel
 from .yolo import yolo_weights
 
-CONFIDENCE_TOLERANCE = 1e-3  ##< Allowed PyTorch/ONNX per-point confidence difference.
+CONFIDENCE_TOLERANCE = 1e-3  ##< PyTorch 与 ONNX 逐点置信度允许的差异。
 
 
 def export_graphs(detector, keypoints, directory):
-    """@brief Export eval-mode CPU modules with fixed RGB inputs and raw candidate, heatmap and logit outputs.
+    """@brief 导出 eval 模式的 CPU 模块，输入为固定尺寸 RGB，输出原始候选框、热图与 logit。
 
-    @param[in] detector CPU YOLO module producing raw candidates.
-    @param[in] keypoints CPU LiteHRNet module producing heatmaps and logits.
-    @param[in] directory Destination for the two fixed-shape ONNX files.
+    @param[in] detector 输出原始候选框的 CPU YOLO 模块。
+    @param[in] keypoints 输出热图与 logit 的 CPU LiteHRNet 模块。
+    @param[in] directory 两个固定形状 ONNX 文件的输出目录。
     """
     for model, side, filename, names in (
         (detector, 320, "detector", ["candidates"]),
@@ -37,7 +37,7 @@ def export_graphs(detector, keypoints, directory):
         path = directory / f"{filename}.onnx"
         tensor = torch.zeros(1, 3, side, side)
         with torch.no_grad():
-            model(tensor)  # Materialize the detector's anchors for the fixed input size.
+            model(tensor)  # 按固定输入尺寸生成检测器的锚点。
             torch.onnx.export(
                 model,
                 tensor,
@@ -53,12 +53,12 @@ def export_graphs(detector, keypoints, directory):
 
 
 def verify_release(directory):
-    """@brief Run the exported graphs on golden RGBs and compare flags, boxes, confidence and landmark XY.
+    """@brief 在金标准 RGB 上运行导出的计算图，比对检出标记、检测框、置信度与关键点 XY。
 
-    @param[in] directory Release containing both ONNX files, model_meta.yaml and golden/cases.yaml.
-    @return Hit count and maximum end-to-end landmark deviation (pixel).
-    @throws ValueError For any detection disagreement, landmark deviation of at least 0.5 pixel,
-            or golden frames without a single detection.
+    @param[in] directory 含两个 ONNX 文件、model_meta.yaml 与 golden/cases.yaml 的发布目录。
+    @return 检出数量及端到端关键点最大偏差，单位 pixel。
+    @throws ValueError 检测结果不一致、关键点偏差达到 0.5 pixel，
+            或金标准帧中没有任何检出时抛出。
     """
     directory = Path(directory)
     options = ort.SessionOptions()
@@ -93,7 +93,7 @@ def verify_release(directory):
         if not deviation < 0.5:
             raise ValueError(f"Keypoints differ by {deviation:g} pixel for {case['image']}")
         threshold = meta["keypoints"]["threshold"]
-        # float32 graph differences reach ~1e-4 in confidence; a validity flip within that band of the threshold is noise.
+        # float32 计算图的置信度差异可达约 1e-4；门限附近该范围内的有效性翻转视为噪声。
         decisive = np.abs(np.asarray(case["confidence"]) - threshold) > CONFIDENCE_TOLERANCE
         flips = pred.valid(w, h, threshold) != np.asarray(case["valid"])
         if np.any(flips & decisive) or not np.allclose(
@@ -107,9 +107,9 @@ def verify_release(directory):
 
 
 def _golden(directory, data, manifest, frames, predictor, threshold):
-    """@brief Sample up to 16 evaluation frames across splits and hits/misses; store CPU PyTorch predictions.
+    """@brief 跨划分、兼顾检出/漏检抽取至多 16 个评估帧，保存 CPU 上 PyTorch 的预测。
 
-    The evaluation may have run on CUDA; the reference is recomputed on CPU, the deployment target of the check.
+    评估可能在 CUDA 上运行；参考结果在 CPU 上重算，CPU 是该校验面向的部署目标。
     """
     groups = defaultdict(list)
     for frame in frames:
@@ -134,13 +134,13 @@ def _golden(directory, data, manifest, frames, predictor, threshold):
 
 
 def export(detector, keypoints, evaluation, out, verify=False):
-    """@brief Publish a YOLO11n + LiteHRNet-18 release from evaluated, frozen checkpoints.
+    """@brief 由已评估、已冻结的检查点发布 YOLO11n + LiteHRNet-18 发布目录。
 
-    @param[in] detector Trained detector run or weights/best.pt.
-    @param[in] keypoints Trained LiteHRNet run or best.pt.
-    @param[in] evaluation Matching completed evaluation directory, with access to its source images.
-    @param[in] out Empty release directory.
-    @param[in] verify Replay ONNX Runtime before publishing.
+    @param[in] detector 训练好的检测器运行目录或 weights/best.pt。
+    @param[in] keypoints 训练好的 LiteHRNet 运行目录或 best.pt。
+    @param[in] evaluation 对应的已完成评估目录，需能访问其源图像。
+    @param[in] out 空的发布目录。
+    @param[in] verify 发布前用 ONNX Runtime 回放校验。
     """
     evaluation, out = Path(evaluation), Path(out)
     weights = model_hashes(detector, keypoints)

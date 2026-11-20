@@ -13,15 +13,15 @@ namespace tech_core_estimation_model
 
 struct TechCoreModel::Impl
 {
-  ModelMeta meta;              ///< Checked release metadata.
-  ov::InferRequest detector;   ///< Detector request and its input/output tensors.
-  ov::InferRequest keypoints;  ///< Landmark request and its input/output tensors.
+  ModelMeta meta;              ///< 已校验的发布目录元数据。
+  ov::InferRequest detector;   ///< 检测器推理请求及其输入/输出张量。
+  ov::InferRequest keypoints;  ///< 关键点推理请求及其输入/输出张量。
 };
 
 namespace
 {
 
-/** @brief Load an ONNX graph exported for the same geometry as model_meta.yaml. */
+/** @brief 加载与 model_meta.yaml 几何一致的 ONNX 图。 */
 std::shared_ptr<ov::Model> readGraph(ov::Core & core, const std::filesystem::path & path, const Geometry & geometry)
 {
   auto graph = core.read_model(path.string());
@@ -32,7 +32,7 @@ std::shared_ptr<ov::Model> readGraph(ov::Core & core, const std::filesystem::pat
   return graph;
 }
 
-/** @brief Fill the request's float32 NCHW input in RGB order and run one stage. */
+/** @brief 按 RGB 顺序填充推理请求的 float32 NCHW 输入，并执行一个阶段。 */
 void runStage(ov::InferRequest & request, const cv::Mat & bgr, double scale)
 {
   auto tensor = request.get_input_tensor();

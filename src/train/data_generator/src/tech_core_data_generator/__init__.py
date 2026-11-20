@@ -1,4 +1,4 @@
-"""@brief Render labelled technology core images and read their geometry and dataset contracts."""
+"""@brief 渲染带标注的科技核心图像，并读取其几何与数据集契约。"""
 
 from .camera import CameraConfig, Viewpoint
 from .dataset import load_manifest

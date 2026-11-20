@@ -11,7 +11,7 @@ namespace tech_core_estimation::detail
 namespace
 {
 
-/** @brief Test cheirality on every selected point, including observations outside the fit. */
+/** @brief 对每个选中点做正深度（cheirality）检验，包括未参与拟合的观测。 */
 bool positiveDepth(const Correspondences & observations, const Pose & pose)
 {
   if (!cv::checkRange(pose.rotation) || !cv::checkRange(pose.translation)) {
@@ -29,7 +29,7 @@ bool positiveDepth(const Correspondences & observations, const Pose & pose)
   return true;
 }
 
-/** @brief Measure raw-image residuals and identify support for the current pose. */
+/** @brief 计算原图残差，并确定当前位姿的支持集。 */
 Fit evaluate(const Correspondences & observations, const Calibration & camera, const Pose & pose,
              double threshold, bool robust)
 {
@@ -47,7 +47,7 @@ Fit evaluate(const Correspondences & observations, const Calibration & camera, c
   return fit;
 }
 
-/** @brief Evaluate radial Huber loss and optionally compute its damped Gauss-Newton step. */
+/** @brief 计算径向 Huber 损失，可选地求其阻尼 Gauss-Newton 步长。 */
 double huberCost(const Correspondences & active, const Calibration & camera, const Pose & pose,
                  double threshold, cv::Vec<double, 6> * step = nullptr)
 {

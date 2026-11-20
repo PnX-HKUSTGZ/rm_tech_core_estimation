@@ -11,7 +11,7 @@ namespace tech_core_estimation::detail
 namespace
 {
 
-/** @brief Center the N-by-2 or N-by-3 coordinate matrix for a translation-independent rank test. */
+/** @brief 将 N×2 或 N×3 坐标矩阵去中心化，使秩检验与平移无关。 */
 cv::Mat centeredCoordinates(const cv::Mat & points)
 {
   const cv::Mat coordinates = points.reshape(1);
@@ -20,7 +20,7 @@ cv::Mat centeredCoordinates(const cv::Mat & points)
   return coordinates - cv::repeat(mean, coordinates.rows, 1);
 }
 
-/** @brief Singular values in decreasing order for centered landmark coordinates. */
+/** @brief 去中心化关键点坐标的奇异值，按降序排列。 */
 cv::Mat singularValues(const cv::Mat & points)
 {
   cv::Mat singular;
@@ -28,19 +28,19 @@ cv::Mat singularValues(const cv::Mat & points)
   return singular;
 }
 
-/** @brief Reference relative rank test for both model and image coordinates. */
+/** @brief 与参考实现一致的相对秩检验，模型坐标与图像坐标通用。 */
 bool spansPlane(const cv::Mat & singular)
 {
   return singular.at<double>(0) > 1e-12 && singular.at<double>(1) > singular.at<double>(0) * 1e-7;
 }
 
-/** @brief Whether a noncollinear 3D point set lies in a plane. */
+/** @brief 判断不共线的三维点集是否共面。 */
 bool planar(const cv::Mat & singular)
 {
   return singular.at<double>(2) <= singular.at<double>(0) * 1e-7;
 }
 
-/** @brief Append a new support once, preserving the generation order for tied scores. */
+/** @brief 追加新的支持集（去重），得分相同时保持生成顺序。 */
 void addGroup(std::vector<std::vector<int>> & groups, const std::vector<int> & support)
 {
   if (std::find(groups.begin(), groups.end(), support) == groups.end()) {
@@ -48,7 +48,7 @@ void addGroup(std::vector<std::vector<int>> & groups, const std::vector<int> & s
   }
 }
 
-/** @brief Screen planar points in undistorted pixels and retain the homography consensus. */
+/** @brief 在去畸变像素坐标中筛选共面点，保留单应性一致集。 */
 std::vector<int> homographySupport(const Correspondences & observations, const Calibration & camera,
                                    const PnPConfig & config, const cv::Mat & centered,
                                    const cv::Mat & basis)
@@ -71,7 +71,7 @@ std::vector<int> homographySupport(const Correspondences & observations, const C
   return support;
 }
 
-/** @brief Append the SQPnP or AP3P RANSAC seed and its support. */
+/** @brief 追加 SQPnP 或 AP3P RANSAC 种子及其支持集。 */
 void addRansac(const Correspondences & observations, const Calibration & camera,
                const PnPConfig & config, cv::SolvePnPMethod method,
                std::vector<std::vector<int>> & groups, std::vector<Seed> & seeds)
@@ -83,7 +83,7 @@ void addRansac(const Correspondences & observations, const Calibration & camera,
       camera.distortion, seed.pose.rotation, seed.pose.translation, false, config.ransac_iterations,
       static_cast<float>(config.reprojection_threshold), config.ransac_confidence, seed.support, method);
   } catch (const cv::Exception &) {
-    // OpenCV 4.6 SQPnP rejects subpixel clusters during the RANSAC refit.
+    // OpenCV 4.6 的 SQPnP 在 RANSAC 重拟合时会拒绝亚像素聚集点。
     return;
   }
   if (solved && seed.support.size() >= 4) {
@@ -93,7 +93,7 @@ void addRansac(const Correspondences & observations, const Calibration & camera,
   }
 }
 
-/** @brief Collect all solutions for a group, including both planar IPPE branches. */
+/** @brief 收集一组点的全部解，包括共面 IPPE 的两个分支。 */
 void addGeneric(const Correspondences & group, const Calibration & camera, cv::SolvePnPMethod method,
                 const std::vector<int> & support, std::vector<Seed> & seeds)
 {
@@ -102,7 +102,7 @@ void addGeneric(const Correspondences & group, const Calibration & camera, cv::S
     cv::solvePnPGeneric(group.points, group.pixels, camera.matrix, camera.distortion, rotations,
                         translations, false, method);
   } catch (const cv::Exception &) {
-    // A small normalized image variance can also reject the direct SQPnP fit.
+    // 归一化图像方差过小时，直接 SQPnP 拟合同样可能被拒绝。
     return;
   }
   for (size_t i = 0; i < rotations.size(); ++i) {

@@ -1,4 +1,4 @@
-"""Generate the OpenCV 4.6 oracle with PYTHONPATH=ref/rm27_tech_core_estimation_demo."""
+"""在 PYTHONPATH=ref/rm27_tech_core_estimation_demo 下生成 OpenCV 4.6 参考用例。"""
 
 from pathlib import Path
 
@@ -13,7 +13,7 @@ from tech_core_sim import get_keypoints, sample_random
 
 
 def main():
-    """@brief Project the simulator landmarks and save the Python solver's answers."""
+    """@brief 投影模拟器关键点，并保存 Python 解算器的结果。"""
     landmarks = get_keypoints()
     model = KeypointModel(landmarks.names, landmarks.points, landmarks.groups)
     solver = PnPEstimator(model)
@@ -23,7 +23,7 @@ def main():
     cases = []
     views = sample_random(40, seed=42, r_range=(0.3, 1.), theta_range=(-1.1, 1.1),
                           alpha_range=(-0.6, 0.75), target=(-0.1, 0., 0.13))
-    # Four blocks cover full support, missing groups, small supports, and unsolvable frames.
+    # 四组用例分别覆盖：全部点可用、缺失分组、小支持集、不可解帧。
     scenarios = ("full", "full", "outliers", "outliers", "dropout", "planar", "four", "five", "six", "failure")
     sparse_counts = {"four": 4, "five": 5, "six": 6}
     for index, view in enumerate(views):

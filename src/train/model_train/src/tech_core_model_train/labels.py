@@ -1,4 +1,4 @@
-"""@brief YOLO dataset conversion and training provenance for the YAML dataset contract."""
+"""@brief 面向 YAML 数据集契约的 YOLO 数据集转换与训练来源记录。"""
 
 import hashlib
 import platform
@@ -16,20 +16,20 @@ from tech_core_data_generator.geometry import geometry_sha256
 
 
 def sha256(path: Path) -> str:
-    """@brief Return the SHA-256 of a manifest, checkpoint or experiment file.
+    """@brief 返回清单、检查点或实验文件的 SHA-256。
 
-    @param[in] path Input file.
-    @return Lowercase hex digest.
+    @param[in] path 输入文件。
+    @return 小写十六进制摘要。
     """
     with path.open("rb") as stream:
         return hashlib.file_digest(stream, "sha256").hexdigest()
 
 
 def write_yaml(path, data):
-    """@brief Publish a completed YAML artifact atomically in its destination directory.
+    """@brief 在目标目录中原子地发布一个完整的 YAML 产物。
 
-    @param[in] path Destination file.
-    @param[in] data YAML-compatible content.
+    @param[in] path 目标文件。
+    @param[in] data 可序列化为 YAML 的内容。
     """
     with TemporaryDirectory(dir=path.parent) as work:
         temporary = Path(work) / path.name
@@ -39,30 +39,30 @@ def write_yaml(path, data):
 
 
 def read_yaml(path):
-    """@brief Read an experiment, selection or evaluation artifact.
+    """@brief 读取实验、选择或评估产物。
 
-    @param[in] path Source YAML file.
-    @return Parsed YAML document.
+    @param[in] path 源 YAML 文件。
+    @return 解析后的 YAML 文档。
     """
     with path.open(encoding="utf-8") as stream:
         return yaml.load(stream, Loader=yaml.CSafeLoader)
 
 
 def check_geometry(checkpoint):
-    """@brief Reject weights or selections with a missing or different ordered geometry fingerprint.
+    """@brief 拒绝缺少有序几何指纹或指纹不一致的权重与选择结果。
 
-    @param[in] checkpoint Metadata containing geometry_sha256.
+    @param[in] checkpoint 含 geometry_sha256 的元数据。
     """
     if checkpoint.get("geometry_sha256") != geometry_sha256():
         raise ValueError("Checkpoint or selection geometry SHA-256 differs from the installed geometry contract")
 
 
 def pretrained_file(out, url):
-    """@brief Cache upstream weights next to the experiment and return the local path.
+    """@brief 将上游权重缓存到实验目录旁，并返回本地路径。
 
-    @param[in] out Training experiment directory.
-    @param[in] url Upstream release asset URL.
-    @return Local checkpoint path.
+    @param[in] out 训练实验目录。
+    @param[in] url 上游发布资源 URL。
+    @return 本地检查点路径。
     """
     directory = out.parent / "pretrained"
     directory.mkdir(exist_ok=True)
@@ -76,13 +76,13 @@ def pretrained_file(out, url):
 
 
 def experiment(data, task, seed, hyperparameters):
-    """@brief Record versions, seed, training parameters and identities of training inputs.
+    """@brief 记录版本、种子、训练参数及训练输入的标识。
 
-    @param[in] data Training manifest directory.
-    @param[in] task Training command.
-    @param[in] seed Training seed.
-    @param[in] hyperparameters Optimizer and model configuration.
-    @return Experiment metadata document.
+    @param[in] data 训练清单目录。
+    @param[in] task 训练子命令。
+    @param[in] seed 训练种子。
+    @param[in] hyperparameters 优化器与模型配置。
+    @return 实验元数据文档。
     """
     packages = (
         "torch",
@@ -112,29 +112,29 @@ def experiment(data, task, seed, hyperparameters):
 
 
 def rgb_image(path):
-    """@brief Load an original uint8 RGB image from a manifest path.
+    """@brief 由清单路径加载原始 uint8 RGB 图像。
 
-    @param[in] path Source image file.
-    @return H×W×3 RGB8 image.
+    @param[in] path 源图像文件。
+    @return H×W×3 RGB8 图像。
     """
     return cv2.cvtColor(cv2.imread(str(path)), cv2.COLOR_BGR2RGB)
 
 
 def image_points(row):
-    """@brief Read 16 original image points (pixel), replacing manifest null coordinates with NaN.
+    """@brief 读取 16 个原图关键点（单位 pixel），清单中的 null 坐标替换为 NaN。
 
-    @param[in] row Positive manifest record.
-    @return 16×2 original-image coordinates (pixel).
+    @param[in] row 正样本清单记录。
+    @return 16×2 原图坐标，单位 pixel。
     """
     return np.array([p if p is not None else [np.nan, np.nan] for p in row["pixels"]], dtype=float)
 
 
 def yolo_label(row, task):
-    """@brief Encode a manifest observation as a normalized detect or 16-point pose label.
+    """@brief 把清单观测编码为归一化的 detect 标签或 16 点 pose 标签。
 
-    @param[in] row Manifest record with original-image annotations (pixel).
-    @param[in] task detect or pose.
-    @return YOLO label line, or empty string for background.
+    @param[in] row 带原图标注（单位 pixel）的清单记录。
+    @param[in] task detect 或 pose。
+    @return YOLO 标签行；背景样本返回空字符串。
     """
     if row["bbox_xyxy"] is None:
         return ""
@@ -148,12 +148,12 @@ def yolo_label(row, task):
 
 
 def yolo_dataset(data: Path, out: Path, task: str) -> Path:
-    """@brief Write split image/label directories and return the Ultralytics dataset YAML path.
+    """@brief 写出各划分的图像/标签目录，并返回 Ultralytics 数据集 YAML 路径。
 
-    @param[in] data Completed Blender dataset root.
-    @param[in] out Destination for derived images and labels.
-    @param[in] task detect includes backgrounds, pose includes target boxes only.
-    @return Path to the YOLO dataset configuration.
+    @param[in] data 已完成的 Blender 数据集根目录。
+    @param[in] out 派生图像与标签的输出目录。
+    @param[in] task detect 包含背景样本，pose 只包含有目标框的样本。
+    @return YOLO 数据集配置文件路径。
     """
     splits = {}
     for row in load_manifest(data)["records"]:

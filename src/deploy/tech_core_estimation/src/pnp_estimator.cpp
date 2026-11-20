@@ -16,7 +16,7 @@ namespace tech_core_estimation
 namespace
 {
 
-/** @brief Validate model metadata, camera calibration and solver controls on creation. */
+/** @brief 创建时校验模型数据、相机标定与解算参数。 */
 std::string inputError(const KeypointModel & model, const CameraIntrinsics & camera,
                        const PnPConfig & config)
 {

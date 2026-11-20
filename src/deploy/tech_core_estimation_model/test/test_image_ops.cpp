@@ -55,7 +55,7 @@ TEST(ImageOps, FractionalCropPreservesBilinearWeightsAtTheImageEdge)
   cv::Mat3b frame(3, 3, cv::Vec3b(200, 100, 0));
   cv::Mat crop;
   squareCrop(frame, {0, 0, 2, 2}, 3, 1.68, crop);
-  // The top-left sample is at (-0.12, -0.12), with one in-frame neighbour.
+  // 左上角采样点位于 (-0.12, -0.12)，只有一个邻点在图像内。
   EXPECT_EQ(crop.at<cv::Vec3b>(0, 0), cv::Vec3b(155, 77, 0));
 }
 

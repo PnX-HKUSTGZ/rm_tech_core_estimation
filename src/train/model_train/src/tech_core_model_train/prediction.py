@@ -1,4 +1,4 @@
-"""@brief Predictions and affine crop transforms in original image coordinates."""
+"""@brief 原图坐标下的预测结果与仿射裁剪变换。"""
 
 from dataclasses import dataclass
 
@@ -8,28 +8,28 @@ import numpy as np
 
 @dataclass
 class Prediction:
-    """@brief Highest scoring detection and ordered landmark predictions for one RGB frame."""
+    """@brief 一帧 RGB 中得分最高的检测框及有序关键点预测。"""
 
-    bbox_xyxy: np.ndarray | None  ##< Exclusive original-image bounds (pixel), None on a miss.
-    score: float  ##< Detector confidence.
-    pixels: np.ndarray  ##< Original-image XY (pixel), in geometry order.
-    confidence: np.ndarray  ##< Per-point confidence in [0, 1].
+    bbox_xyxy: np.ndarray | None  ##< 上界不含的原图包围框，单位 pixel；漏检时为 None。
+    score: float  ##< 检测器置信度。
+    pixels: np.ndarray  ##< 原图 XY，单位 pixel，按几何顺序排列。
+    confidence: np.ndarray  ##< 逐点置信度，取值 [0, 1]。
 
     @classmethod
     def missing(cls):
-        """@brief Return an empty detection with 16 missing points.
+        """@brief 返回含 16 个缺失点的空检测结果。
 
-        @return Empty box, NaN coordinates and zero confidence.
+        @return 空检测框、NaN 坐标与零置信度。
         """
         return cls(None, 0.0, np.full((16, 2), np.nan), np.zeros(16))
 
     def valid(self, width, height, threshold):
-        """@brief Mark in-frame observations meeting the frozen confidence threshold.
+        """@brief 标记位于图像内且达到冻结置信度门限的观测。
 
-        @param[in] width Original image width (pixel).
-        @param[in] height Original image height (pixel).
-        @param[in] threshold Minimum confidence.
-        @return Ordered 16-element mask.
+        @param[in] width 原图宽度，单位 pixel。
+        @param[in] height 原图高度，单位 pixel。
+        @param[in] threshold 置信度下限。
+        @return 有序的 16 元素掩码。
         """
         return (
             (self.confidence >= threshold)
@@ -39,11 +39,11 @@ class Prediction:
 
 
 def square_crop(rgb, box):
-    """@brief Warp a 1.25× square around a box, preserving out-of-image padding.
+    """@brief 围绕检测框截取 1.25 倍正方形区域，图像外部分保留填充。
 
-    @param[in] rgb Original RGB uint8 image.
-    @param[in] box Positive exclusive XYXY bounds (original image, pixel).
-    @return 256×256 RGB crop and homogeneous image-to-crop pixel transform.
+    @param[in] rgb 原始 RGB uint8 图像。
+    @param[in] box 面积为正、上界不含的 XYXY 包围框（原图，单位 pixel）。
+    @return 256×256 RGB 裁剪图及原图到裁剪图的齐次像素变换。
     """
     box = np.asarray(box, dtype=float)
     center = (box[:2] + box[2:]) / 2
@@ -53,10 +53,10 @@ def square_crop(rgb, box):
 
 
 def restore_points(points, transform):
-    """@brief Invert an image-to-crop affine transform for crop XY points and return original image XY (pixel).
+    """@brief 对原图到裁剪图的仿射变换求逆，把裁剪图 XY 点还原为原图 XY（单位 pixel）。
 
-    @param[in] points Crop XY coordinates (pixel).
-    @param[in] transform Matrix returned by square_crop().
-    @return Original-image XY coordinates (pixel).
+    @param[in] points 裁剪图 XY 坐标，单位 pixel。
+    @param[in] transform square_crop() 返回的矩阵。
+    @return 原图 XY 坐标，单位 pixel。
     """
     return np.c_[points, np.ones(len(points))] @ np.linalg.inv(transform)[:2].T

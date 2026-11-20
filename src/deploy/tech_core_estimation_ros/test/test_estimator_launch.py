@@ -31,7 +31,7 @@ INFO_TOPIC = '/t6_calibration'
 
 
 def generate_test_description():
-    """Exercise the installed launch file, including its independent camera remappings."""
+    """运行已安装的 launch 文件，包括其相互独立的相机话题重映射。"""
     path = PathJoinSubstitution([FindPackageShare('tech_core_estimation_ros'), 'launch',
                                  'tech_core_estimation.launch.py'])
     estimator = IncludeLaunchDescription(PythonLaunchDescriptionSource(path), launch_arguments={
@@ -44,7 +44,7 @@ def generate_test_description():
 
 
 class TestCameraStream(unittest.TestCase):
-    """Replay synchronized inputs and check the node's stamped outputs and failure counts."""
+    """回放同步输入，检查节点带时间戳的输出与失败计数。"""
 
     def setUp(self):
         rclpy.init()
@@ -165,7 +165,7 @@ class TestCameraStream(unittest.TestCase):
 
 @launch_testing.post_shutdown_test()
 class TestShutdown(unittest.TestCase):
-    """The standalone component exits cleanly on launch shutdown."""
+    """launch 关闭时独立组件正常退出。"""
 
     def test_exit_code(self, proc_info):
         launch_testing.asserts.assertExitCodes(proc_info)

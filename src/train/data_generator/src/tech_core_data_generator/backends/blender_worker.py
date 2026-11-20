@@ -1,4 +1,4 @@
-"""@brief Cycles worker, executed by Blender's bundled Python in a private directory."""
+"""@brief Cycles 工作进程，由 Blender 自带 Python 在私有目录中执行。"""
 
 import json
 import sys
@@ -9,13 +9,13 @@ import bpy
 import numpy as np
 from mathutils import Matrix, Vector
 
-# Load only the OBJ reader. Importing the package would require the host Python dependencies.
+# 只加载 OBJ 读取模块；导入整个包会依赖宿主 Python 的第三方库。
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from geometry import read_obj
 
 
 def _build(config, work):
-    """@brief Build the static mesh, studio and camera. All visual OBJ positions are core-frame metres at zero joints."""
+    """@brief 构建静态网格、影棚与相机。所有可视 OBJ 坐标均为零关节位下的核心系坐标，单位 m。"""
     bpy.ops.wm.read_factory_settings(use_empty=True)
     scene = bpy.context.scene
     scene.render.engine = "CYCLES"
@@ -73,7 +73,7 @@ def _build(config, work):
         depth.format.media_type = "IMAGE"
         depth.file_name = ""
         depth.file_output_items.clear()
-        depth.file_output_items.new("RGBA", "depth0001")  # Match the frame suffix added by Blender 4.
+        depth.file_output_items.new("RGBA", "depth0001")  # 与 Blender 4 自动添加的帧号后缀保持一致。
     else:
         scene.use_nodes = True
         tree = scene.node_tree
@@ -94,7 +94,7 @@ def _build(config, work):
 
 
 def _render(scene, materials, request, camera, work):
-    """@brief Apply a complete frame request and transfer RGB8 and float32 optical depth (m)."""
+    """@brief 应用一次完整的帧请求，传回 RGB8 与 float32 光学深度（单位 m）。"""
     settings = request["appearance"]
     scene.view_settings.view_transform = settings["view_transform"]
     scene.view_settings.exposure = settings["exposure"]
@@ -130,7 +130,7 @@ def _render(scene, materials, request, camera, work):
 
 
 def _main():
-    """@brief Read render requests until the parent closes the pipe."""
+    """@brief 持续读取渲染请求，直到父进程关闭管道。"""
     path = Path(sys.argv[sys.argv.index("--") + 1])
     config = json.loads(path.read_text())
     scene, materials = _build(config, path.parent)

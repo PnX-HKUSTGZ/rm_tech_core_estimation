@@ -1,4 +1,4 @@
-"""@brief Pinhole camera calibration, projection and source-view distributions."""
+"""@brief 针孔相机标定、投影与源视角分布。"""
 
 from dataclasses import dataclass
 from math import cos, pi, sin, tan
@@ -8,13 +8,13 @@ import numpy as np
 
 @dataclass(frozen=True)
 class CameraConfig:
-    """@brief Centred square-pixel camera with zero distortion.
+    """@brief 主点居中、方形像素、无畸变的相机。
 
-    @param[in] width Image width (pixel).
-    @param[in] height Image height (pixel).
-    @param[in] fovy Vertical field of view (rad).
-    @param[in] near Near optical clipping depth (m).
-    @param[in] far Far optical clipping depth (m).
+    @param[in] width 图像宽度，单位 pixel。
+    @param[in] height 图像高度，单位 pixel。
+    @param[in] fovy 垂直视场角，单位 rad。
+    @param[in] near 光学近裁剪深度，单位 m。
+    @param[in] far 光学远裁剪深度，单位 m。
     """
 
     width: int = 320
@@ -24,15 +24,15 @@ class CameraConfig:
     far: float = 10.0
 
     def __post_init__(self):
-        """@brief Reject camera settings outside the pinhole and clipping domain."""
+        """@brief 拒绝超出针孔模型与裁剪范围的相机参数。"""
         if min(self.width, self.height) < 1 or not 0 < self.fovy < pi or not 0 < self.near < self.far:
             raise ValueError("Require positive image size, 0 < fovy < pi rad and 0 < near < far")
 
     @property
     def matrix(self) -> np.ndarray:
-        """@brief Compute pinhole intrinsics.
+        """@brief 计算针孔内参。
 
-        @return 3×3 optical camera matrix (pixel), with integer pixel centres.
+        @return 3×3 相机矩阵，单位 pixel，像素中心位于整数坐标。
         """
         focal = self.height / (2 * tan(self.fovy / 2))
         return np.array([[focal, 0, (self.width - 1) / 2], [0, focal, (self.height - 1) / 2], [0, 0, 1]])
@@ -40,13 +40,13 @@ class CameraConfig:
 
 @dataclass(frozen=True)
 class Viewpoint:
-    """@brief Camera looking towards a point in the nominal core frame.
+    """@brief 朝向名义核心系中某一点的相机。
 
-    @param[in] r Distance from the core origin (m).
-    @param[in] theta Azimuth about +Z from +X towards +Y (rad).
-    @param[in] alpha Elevation above the core XY plane (rad).
-    @param[in] target Look-at point in the core frame (m).
-    @param[in] roll Rotation around the optical axis (rad).
+    @param[in] r 到核心系原点的距离，单位 m。
+    @param[in] theta 绕 +Z 的方位角，由 +X 转向 +Y，单位 rad。
+    @param[in] alpha 相对核心系 XY 平面的仰角，单位 rad。
+    @param[in] target 核心系中的注视点，单位 m。
+    @param[in] roll 绕光轴的滚转角，单位 rad。
     """
 
     r: float = 0.8
@@ -56,15 +56,15 @@ class Viewpoint:
     roll: float = 0.0
 
     def __post_init__(self):
-        """@brief Reject invalid camera positions before passing them to a renderer."""
+        """@brief 在交给渲染器之前拒绝非法的相机位置。"""
         if self.r <= 0 or not np.isfinite([self.r, self.theta, self.alpha, self.roll, *self.target]).all():
             raise ValueError("Viewpoint requires a positive radius and finite coordinates and angles")
 
     @property
     def position(self) -> np.ndarray:
-        """@brief Convert spherical coordinates to Cartesian coordinates.
+        """@brief 将球坐标转换为直角坐标。
 
-        @return Camera origin in the core frame (m).
+        @return 相机原点在核心系中的位置，单位 m。
         """
         return self.r * np.array(
             [cos(self.alpha) * cos(self.theta), cos(self.alpha) * sin(self.theta), sin(self.alpha)]
@@ -72,10 +72,10 @@ class Viewpoint:
 
     @property
     def camera_from_core(self) -> np.ndarray:
-        """@brief Construct a rolled look-at camera.
+        """@brief 构造带滚转的注视相机。
 
-        @return Core pose in the optical frame (4×4, translation in m, +Z forward and +Y down).
-        @throws ValueError When the look-at point coincides with the camera.
+        @return 核心系在相机光学系中的位姿（4×4，平移单位 m，+Z 向前、+Y 向下）。
+        @throws ValueError 注视点与相机位置重合时抛出。
         """
         forward = self.target - self.position
         length = np.linalg.norm(forward)
@@ -95,12 +95,12 @@ class Viewpoint:
 
 
 def project_points(points: np.ndarray, camera: CameraConfig, camera_from_core: np.ndarray):
-    """@brief Project landmarks into the undistorted original image.
+    """@brief 将关键点投影到无畸变原图。
 
-    @param[in] points Core-frame XYZ coordinates (m).
-    @param[in] camera Image calibration and optical clipping limits.
-    @param[in] camera_from_core Core pose in the optical frame (translation in m).
-    @return Pixel coordinates (NaN behind camera), optical depths (m) and in-frame flags.
+    @param[in] points 核心系 XYZ 坐标，单位 m。
+    @param[in] camera 图像标定与光学裁剪范围。
+    @param[in] camera_from_core 核心系在相机光学系中的位姿，平移单位 m。
+    @return 像素坐标（相机后方为 NaN）、光学深度（单位 m）及是否在图像内的标记。
     """
     optical = points @ camera_from_core[:3, :3].T + camera_from_core[:3, 3]
     depth = optical[:, 2]
@@ -114,11 +114,11 @@ def project_points(points: np.ndarray, camera: CameraConfig, camera_from_core: n
 
 
 def sample_random(rng: np.random.Generator, distribution: str) -> Viewpoint:
-    """@brief Draw one independent source view using the data_generator Readme distributions.
+    """@brief 按 data_generator Readme 中的分布采样一个独立源视角。
 
-    @param[in] rng Seeded random stream for this split.
-    @param[in] distribution regular, stress or training (85% common views).
-    @return Sampled core-frame viewpoint (m, rad).
+    @param[in] rng 该划分使用的带种子随机数流。
+    @param[in] distribution regular、stress 或 training（85% 为常见视角）。
+    @return 采样得到的核心系视角（单位 m、rad）。
     """
     if distribution == "training":
         if rng.random() < 0.15:

@@ -9,41 +9,41 @@
 namespace tech_core_estimation::detail
 {
 
-/** @brief Selected model and image points in matching order. */
+/** @brief 选中的模型点与图像点，按对应顺序排列。 */
 struct Correspondences
 {
-  std::vector<cv::Point3d> points;  ///< Core-frame positions in m.
-  std::vector<cv::Point2d> pixels;  ///< Raw image coordinates in pixels.
+  std::vector<cv::Point3d> points;  ///< 核心系坐标，单位 m。
+  std::vector<cv::Point2d> pixels;  ///< 原图坐标，单位 pixel。
 
-  /** @brief Gather a support set by its indices within the selected observations. */
+  /** @brief 按选中观测内的下标取出支持集。 */
   Correspondences subset(const std::vector<int> & indices) const;
 };
 
-/** @brief OpenCV pinhole calibration for all hypotheses in a frame. */
+/** @brief 一帧内所有假设共用的 OpenCV 针孔标定。 */
 struct Calibration
 {
-  cv::Matx33d matrix;              ///< Focal lengths and principal point in pixels.
-  const std::vector<double> & distortion;  ///< OpenCV distortion coefficients.
+  cv::Matx33d matrix;              ///< 焦距与主点，单位 pixel。
+  const std::vector<double> & distortion;  ///< OpenCV 畸变参数。
 };
 
-/** @brief Core-to-optical rigid transform in OpenCV's parameterization. */
+/** @brief 核心系到相机光学系的刚体变换，采用 OpenCV 参数化。 */
 struct Pose
 {
-  cv::Vec3d rotation;     ///< Rodrigues rotation vector in rad.
-  cv::Vec3d translation;  ///< Core origin in the camera optical frame in m.
+  cv::Vec3d rotation;     ///< Rodrigues 旋转向量，单位 rad。
+  cv::Vec3d translation;  ///< 核心系原点在相机光学系中的位置，单位 m。
 };
 
-/** @brief Initial pose and the observations supporting it. */
+/** @brief 初始位姿及支持它的观测。 */
 struct Seed
 {
-  Pose pose;                 ///< Initial core pose in the optical frame.
-  std::vector<int> support;  ///< Indices into the selected observations.
+  Pose pose;                 ///< 核心系在相机光学系中的初始位姿。
+  std::vector<int> support;  ///< 选中观测内的下标。
 };
 
-/** @brief Check that the model points and image points each span at least two dimensions. */
+/** @brief 检查模型点与图像点各自至少张成二维。 */
 bool noncollinear(const Correspondences & observations);
 
-/** @brief Generate ordered RANSAC and subset PnP hypotheses for the selected observations. */
+/** @brief 为选中观测生成有序的 RANSAC 与子集 PnP 假设。 */
 std::vector<Seed> generateSeeds(const Correspondences & observations, const Calibration & camera,
                                 const PnPConfig & config);
 

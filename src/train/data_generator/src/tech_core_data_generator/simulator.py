@@ -1,4 +1,4 @@
-"""@brief Shared renderer facade and geometry-based ground truth."""
+"""@brief 共用的渲染器门面及基于几何的真值计算。"""
 
 from copy import deepcopy
 
@@ -11,14 +11,14 @@ from .lighting import LightController, LightState, Team
 
 
 class TechCoreSimulator:
-    """@brief Render a stationary core with one reusable backend and optical camera."""
+    """@brief 用一个可复用的后端与光学相机渲染静止的核心。"""
 
     def __init__(self, backend: str = "mujoco", camera: CameraConfig | None = None, blender_samples: int = 8):
-        """@brief Open an offscreen renderer.
+        """@brief 打开离屏渲染器。
 
-        @param[in] backend mujoco or blender.
-        @param[in] camera Pinhole calibration (pixel, rad, m).
-        @param[in] blender_samples Cycles samples per pixel.
+        @param[in] backend mujoco 或 blender。
+        @param[in] camera 针孔标定（单位 pixel、rad、m）。
+        @param[in] blender_samples Cycles 每像素采样数。
         """
         self.backend = backend
         self.camera = camera or CameraConfig()
@@ -49,17 +49,17 @@ class TechCoreSimulator:
         current_angle: float = 0.0,
         appearance: dict | None = None,
     ) -> Frame:
-        """@brief Render one view with projected landmarks and triangle-based occlusion.
+        """@brief 渲染一个视角，并计算投影关键点与基于三角形的遮挡。
 
-        @param[in] view Optical camera viewpoint in the core frame (m, rad).
-        @param[in] state Rule-table lamp state.
-        @param[in] team Indicated team colour.
-        @param[in] time_s Absolute lighting time (s).
-        @param[in] target_angle Desired rotation around core +X (rad).
-        @param[in] current_angle Displayed rotation around core +X (rad).
-        @param[in] appearance Blender material, light and colour overrides, or None for defaults.
-        @return Frame containing independent image and label arrays.
-        @throws ValueError If MuJoCo receives an appearance override.
+        @param[in] view 核心系中的光学相机视角（单位 m、rad）。
+        @param[in] state 规则表灯光状态。
+        @param[in] team 指示的队伍颜色。
+        @param[in] time_s 灯光绝对时刻，单位 s。
+        @param[in] target_angle 绕核心系 +X 的目标旋转角，单位 rad。
+        @param[in] current_angle 显示的绕核心系 +X 的旋转角，单位 rad。
+        @param[in] appearance Blender 材质、灯光与颜色覆盖参数；为 None 时使用默认值。
+        @return 含独立图像与标注数组的帧。
+        @throws ValueError MuJoCo 后端收到外观覆盖参数时抛出。
         """
         state, team = LightState(state), Team(team)
         lamps = self._lights.evaluate(state, team, time_s, target_angle, current_angle)
@@ -89,21 +89,21 @@ class TechCoreSimulator:
         )
 
     def close(self):
-        """@brief Release backend resources."""
+        """@brief 释放后端资源。"""
         self._renderer.close()
 
     def __enter__(self):
-        """@brief Enter a managed rendering session.
+        """@brief 进入受管理的渲染会话。
 
-        @return This simulator.
+        @return 本模拟器。
         """
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        """@brief Close the renderer when the session ends.
+        """@brief 会话结束时关闭渲染器。
 
-        @param[in] exc_type Active exception type, if any.
-        @param[in] exc_value Exception instance, if any.
-        @param[in] traceback Active traceback, if any.
+        @param[in] exc_type 当前异常类型（如有）。
+        @param[in] exc_value 异常实例（如有）。
+        @param[in] traceback 当前调用栈（如有）。
         """
         self.close()

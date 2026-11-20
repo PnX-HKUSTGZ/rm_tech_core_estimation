@@ -1,4 +1,4 @@
-"""@brief Source-view sampling and completed YAML dataset I/O."""
+"""@brief 源视角采样与已完成数据集的 YAML 读写。"""
 
 from importlib.metadata import version
 from pathlib import Path
@@ -15,12 +15,12 @@ from .simulator import TechCoreSimulator
 
 
 def load_manifest(directory: str | Path) -> dict:
-    """@brief Load a completed dataset as specified in the data_generator Readme.
+    """@brief 按 data_generator Readme 的规定加载已完成的数据集。
 
-    @param[in] directory Dataset root containing manifest.yaml.
-    @return Manifest with dataset-relative paths.
-    @throws FileNotFoundError If the dataset has no final manifest.
-    @throws ValueError For incompatible schema or geometry, or source views shared across splits.
+    @param[in] directory 含 manifest.yaml 的数据集根目录。
+    @return 路径相对于数据集根目录的清单。
+    @throws FileNotFoundError 数据集没有最终清单时抛出。
+    @throws ValueError schema 或几何不兼容，或不同划分共用源视角时抛出。
     """
     with (Path(directory) / "manifest.yaml").open(encoding="utf-8") as file:
         manifest = yaml.load(file, Loader=yaml.CSafeLoader)
@@ -38,10 +38,10 @@ def load_manifest(directory: str | Path) -> dict:
 
 
 def require_empty(out: Path) -> None:
-    """@brief Create the output directory, or accept an existing empty one.
+    """@brief 创建输出目录，或接受已存在的空目录。
 
-    @param[in] out Requested output path.
-    @throws FileExistsError If the directory contains any entries.
+    @param[in] out 请求的输出路径。
+    @throws FileExistsError 目录中已有任何条目时抛出。
     """
     out.mkdir(parents=True, exist_ok=True)
     if any(out.iterdir()):
@@ -49,7 +49,7 @@ def require_empty(out: Path) -> None:
 
 
 def _pose_key(camera_from_core) -> tuple:
-    """@brief Compare stored and newly sampled camera poses at the reference holdout precision."""
+    """@brief 按参考留出集的精度比较已存储与新采样的相机位姿。"""
     return tuple(np.round(camera_from_core, 12).ravel())
 
 
@@ -65,17 +65,17 @@ def generate_dataset(
     appearance: str | None = None,
     exclude=(),
 ):
-    """@brief Render independent source views and atomically publish their final manifest.
+    """@brief 渲染相互独立的源视角，并原子地发布最终清单。
 
-    @param[in] out New or empty dataset root.
-    @param[in] renderer blender for training data or mujoco for holdouts.
-    @param[in] counts Number of source views per train/val/test or regular/stress split.
-    @param[in] seed Independent nonnegative run seed.
-    @param[in] camera Original image calibration (pixel, rad, m).
-    @param[in] argv CLI argument vector recorded in generator provenance.
-    @param[in] samples Blender Cycles samples per pixel.
-    @param[in] appearance Blender appearance policy (random or default).
-    @param[in] exclude Completed datasets whose poses are reserved.
+    @param[in] out 新建或为空的数据集根目录。
+    @param[in] renderer blender 用于训练数据，mujoco 用于留出集。
+    @param[in] counts 各划分（train/val/test 或 regular/stress）的源视角数量。
+    @param[in] seed 独立的非负运行种子。
+    @param[in] camera 原图标定（单位 pixel、rad、m）。
+    @param[in] argv 记录在生成器来源信息中的命令行参数。
+    @param[in] samples Blender Cycles 每像素采样数。
+    @param[in] appearance Blender 外观策略（random 或 default）。
+    @param[in] exclude 需要排除其位姿的已完成数据集。
     """
     if min(counts.values()) < 0 or not any(counts.values()):
         raise ValueError("Split counts must be nonnegative and request at least one view")
@@ -104,7 +104,7 @@ def generate_dataset(
             distribution = "training" if renderer == "blender" else split
             split_seed = seed + offsets[split]
             rng = np.random.default_rng(split_seed)
-            # Keep the source camera and lamp time fixed when comparing appearance policies.
+            # 比较不同外观策略时，固定源相机与灯光时刻。
             appearance_rng = np.random.default_rng([split_seed, 1])
             for index in range(count):
                 while True:

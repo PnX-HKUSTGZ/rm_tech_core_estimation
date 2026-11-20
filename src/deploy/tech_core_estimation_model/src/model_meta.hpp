@@ -7,20 +7,20 @@
 namespace tech_core_estimation_model
 {
 
-/** @brief Schema v1 preprocessing and decoding parameters shared by both stages. */
+/** @brief schema v1 中两阶段共用的预处理与解码参数。 */
 struct ModelMeta
 {
-  Geometry geometry;            ///< Landmark order and core-frame positions (m) with their fingerprint.
-  int detector_size;            ///< Square detector input side (pixel).
-  int pad_value;                ///< Letterbox padding intensity on the byte scale.
-  double box_threshold;         ///< Minimum accepted detector score.
-  int crop_size;                ///< Square keypoint input side (pixel).
-  double padding;               ///< Crop side divided by the longer box dimension.
-  int heatmap_size;             ///< Square heatmap side (pixel).
-  double keypoint_threshold;    ///< Minimum valid landmark confidence.
+  Geometry geometry;            ///< 关键点顺序、核心系坐标（单位 m）及其指纹。
+  int detector_size;            ///< 检测器正方形输入边长，单位 pixel。
+  int pad_value;                ///< letterbox 填充灰度值，0–255 字节刻度。
+  double box_threshold;         ///< 检测得分下限。
+  int crop_size;                ///< 关键点网络正方形输入边长，单位 pixel。
+  double padding;               ///< 裁剪边长与检测框长边之比。
+  int heatmap_size;             ///< 正方形热图边长，单位 pixel。
+  double keypoint_threshold;    ///< 关键点有效的最低置信度。
 };
 
-/** @brief Parse schema v1 model_meta.yaml; the preprocessing it describes is implemented in image_ops. */
+/** @brief 解析 schema v1 的 model_meta.yaml；其描述的预处理在 image_ops 中实现。 */
 ModelMeta readModelMeta(const std::filesystem::path & file);
 
 }  // namespace tech_core_estimation_model

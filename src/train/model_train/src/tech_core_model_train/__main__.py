@@ -1,4 +1,4 @@
-"""@brief Train, evaluate and export the technology core RGB landmark models."""
+"""@brief 训练、评估并导出科技核心 RGB 关键点模型。"""
 
 import argparse
 from pathlib import Path
@@ -7,9 +7,9 @@ import torch
 
 
 def main(argv=None):
-    """@brief Dispatch training workspace commands; argv defaults to the process arguments.
+    """@brief 分发训练工作区子命令；argv 默认取进程参数。
 
-    @param[in] argv Command-line arguments, or None for process arguments.
+    @param[in] argv 命令行参数；为 None 时使用进程参数。
     """
     parser = argparse.ArgumentParser(description=__doc__.removeprefix("@brief "))
     commands = parser.add_subparsers(dest="command", required=True)

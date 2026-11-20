@@ -1,4 +1,4 @@
-"""@brief Index-aligned reference PnP. Numerical method from the demo's pose.py (see THIRD_PARTY_NOTICES.md)."""
+"""@brief 下标对齐的参考 PnP。数值方法来自 demo 的 pose.py（见 THIRD_PARTY_NOTICES.md）。"""
 
 from dataclasses import dataclass, field
 from threading import Lock
@@ -12,28 +12,28 @@ _RANSAC_LOCK = Lock()
 
 @dataclass(frozen=True)
 class KeypointModel:
-    """@brief Ordered landmarks in the core frame from the dataset geometry contract."""
+    """@brief 来自数据集几何契约的有序核心系关键点。"""
 
     points: np.ndarray = field(
         default_factory=lambda: np.array(geometry_contract()["points_m"])
-    )  ##< Core-frame XYZ (m).
+    )  ##< 核心系 XYZ，单位 m。
 
 
 def _noncollinear(points):
-    """@brief Test the second singular value relative to the dominant extent."""
+    """@brief 检验第二奇异值相对于主方向尺度的大小。"""
     singular = np.linalg.svd(points - points.mean(axis=0), compute_uv=False)
     return bool(singular[0] > 1e-12 and singular[1] > singular[0] * 1e-7)
 
 
 def estimate(model, pixels, valid, camera_matrix, distortion=None):
-    """@brief Estimate the core pose in the camera optical frame, using the reference 3 pixel consensus radius.
+    """@brief 估计核心系在相机光学系中的位姿，使用参考实现的 3 pixel 一致性半径。
 
-    @param[in] model Ordered core-frame geometry (m).
-    @param[in] pixels Index-aligned original-image observations (pixel).
-    @param[in] valid Per-point observation mask after confidence and image-bound filtering.
-    @param[in] camera_matrix Original pinhole camera intrinsics (pixel).
-    @param[in] distortion Standard OpenCV distortion coefficients, or None for a pinhole camera.
-    @return Homogeneous camera_from_core (translation in m), or None for an unsolvable frame.
+    @param[in] model 有序的核心系几何，单位 m。
+    @param[in] pixels 下标对齐的原图观测，单位 pixel。
+    @param[in] valid 经置信度与图像边界过滤后的逐点观测掩码。
+    @param[in] camera_matrix 原始针孔相机内参，单位 pixel。
+    @param[in] distortion 标准 OpenCV 畸变参数；针孔相机为 None。
+    @return 齐次 camera_from_core（平移单位 m）；不可解帧返回 None。
     """
     pixels = np.asarray(pixels, dtype=np.float64)
     valid = np.asarray(valid, dtype=bool) & np.isfinite(pixels).all(axis=1)
@@ -85,7 +85,7 @@ def estimate(model, pixels, valid, camera_matrix, distortion=None):
             consistent = len(inliers) >= 4 and _noncollinear(obj[inliers]) and _noncollinear(img[inliers])
             if not consistent:
                 break
-            # Score every seed on the same observations, including outliers at their truncated cost.
+            # 在同一组观测上为每个种子打分，离群点按截断代价计入。
             score = float(np.sum(np.minimum(residual**2, threshold**2) if robust else residual**2))
             if np.isfinite(score) and (best is None or score < best[0]):
                 best = score, rvec.copy(), tvec.copy(), residual
@@ -104,15 +104,15 @@ def estimate(model, pixels, valid, camera_matrix, distortion=None):
 
 
 def _hypotheses(obj, img, camera, dist, robust):
-    """@brief Generate joint and consensus seeds using calibrated SQPnP/AP3P and planar homography."""
+    """@brief 用标定后的 SQPnP/AP3P 及平面单应性生成联合种子与一致集种子。"""
     groups, seeds = [np.arange(len(obj))], []
     if not robust:
         return groups, seeds
     centered = obj - obj.mean(axis=0)
     _, singular, basis = np.linalg.svd(centered, full_matrices=False)
     planar = singular[-1] <= singular[0] * 1e-7
-    # Retain the upstream-style hypothesis as well as AP3P. Replacing it
-    # wholesale loses useful solutions on this mixed planar/column geometry.
+    # 除 AP3P 外，保留上游风格的假设。整体替换
+    # 会在这种平面/立柱混合几何上丢失有用的解。
     for method in (cv2.SOLVEPNP_SQPNP, cv2.SOLVEPNP_AP3P):
         try:
             with _RANSAC_LOCK:
@@ -145,8 +145,8 @@ def _hypotheses(obj, img, camera, dist, robust):
                 groups.append(selected)
             if rvec is not None:
                 seeds.append((rvec, tvec, selected))
-    # Five/six points permit only a handful of leave-one-out subsets. Check
-    # them explicitly rather than relying on a lucky randomized sample.
+    # 五个或六个点只能构成少量留一子集。显式检查
+    # 这些子集，而不是依赖随机采样碰巧选中。
     if len(obj) <= 6:
         for excluded in range(len(obj)):
             selected = np.delete(np.arange(len(obj)), excluded)
@@ -156,7 +156,7 @@ def _hypotheses(obj, img, camera, dist, robust):
 
 
 def _refine_huber(obj, img, camera, dist, rvec, tvec, residual):
-    """@brief Apply Huber-weighted local pose refinement on the nearby observations."""
+    """@brief 在邻近观测上做 Huber 加权的局部位姿细化。"""
     threshold = 3.0
     active = np.flatnonzero(residual <= 2 * threshold)
     original = (rvec, tvec)
@@ -165,15 +165,15 @@ def _refine_huber(obj, img, camera, dist, rvec, tvec, residual):
     parameters = np.r_[rvec.reshape(3), tvec.reshape(3)]
 
     def _objective(value):
-        """@brief Evaluate the pixel-domain Huber objective and analytic pose Jacobian."""
+        """@brief 计算像素域 Huber 目标函数及位姿的解析雅可比。"""
         projection, jacobian = cv2.projectPoints(obj[active], value[:3], value[3:], camera, dist)
         residual_xy = projection.reshape(-1, 2) - img[active]
         norm = np.linalg.norm(residual_xy, axis=1)
         loss = np.where(norm <= threshold, norm**2, 2 * threshold * norm - threshold**2)
         return float(np.sum(loss)), residual_xy, jacobian[:, :6], norm
 
-    # Nearby observations receive continuous weights; far outliers remain
-    # excluded. Analytic OpenCV Jacobians avoid an additional SciPy runtime.
+    # 邻近观测获得连续权重，远处离群点仍被排除。
+    # 使用 OpenCV 解析雅可比，避免额外引入 SciPy 运行时依赖。
     for _ in range(8):
         cost, residual_xy, jacobian, norm = _objective(parameters)
         if not np.isfinite(cost) or not np.isfinite(jacobian).all():
@@ -208,7 +208,7 @@ def _refine_huber(obj, img, camera, dist, rvec, tvec, residual):
 
 
 def _positive_depth(obj: np.ndarray, rvec: np.ndarray, tvec: np.ndarray) -> bool:
-    """@brief Test cheirality for every observation used to fit the pose."""
+    """@brief 对参与拟合位姿的每个观测做正深度（cheirality）检验。"""
     if not np.isfinite(rvec).all() or not np.isfinite(tvec).all():
         return False
     depth = (obj @ cv2.Rodrigues(rvec)[0].T + np.asarray(tvec).reshape(1, 3))[:, 2]
@@ -218,6 +218,6 @@ def _positive_depth(obj: np.ndarray, rvec: np.ndarray, tvec: np.ndarray) -> bool
 def _residuals(
     obj: np.ndarray, img: np.ndarray, camera: np.ndarray, dist: np.ndarray, rvec: np.ndarray, tvec: np.ndarray
 ) -> np.ndarray:
-    """@brief Return Euclidean reprojection residuals in original image pixels."""
+    """@brief 返回原图像素下的欧氏重投影残差。"""
     projected = cv2.projectPoints(obj, rvec, tvec, camera, dist)[0].reshape(-1, 2)
     return np.linalg.norm(projected - img, axis=1)

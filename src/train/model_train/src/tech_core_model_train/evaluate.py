@@ -1,4 +1,4 @@
-"""@brief Freeze validation/development choices before scoring held-out RGB frames."""
+"""@brief 在对留出 RGB 帧打分之前冻结验证集/开发集上的选择。"""
 
 from collections import defaultdict
 from pathlib import Path
@@ -15,14 +15,14 @@ from .yolo import YoloPosePredictor, yolo_weights
 
 
 def score_prediction(row, prediction, threshold, model, recognition_s=0.0):
-    """@brief Score an RGB-only prediction against an annotated original image.
+    """@brief 用带标注的原图为一次纯 RGB 预测打分。
 
-    @param[in] row Manifest record, including calibration and ground truth.
-    @param[in] prediction Detected box and ordered original-image points (pixel).
-    @param[in] threshold Minimum accepted point confidence.
-    @param[in] model Ordered core-frame geometry (m).
-    @param[in] recognition_s Wall time for RGB inference (s).
-    @return Frame result with validity, reference pose, error and failure class.
+    @param[in] row 清单记录，含标定与真值。
+    @param[in] prediction 检测框与有序的原图关键点，单位 pixel。
+    @param[in] threshold 关键点置信度下限。
+    @param[in] model 有序的核心系几何，单位 m。
+    @param[in] recognition_s RGB 推理墙钟耗时，单位 s。
+    @return 帧结果，含有效性、参考位姿、误差与失败类别。
     """
     box = prediction.bbox_xyxy
     valid = prediction.valid(row["width"], row["height"], threshold)
@@ -74,10 +74,10 @@ def score_prediction(row, prediction, threshold, model, recognition_s=0.0):
 
 
 def aggregate(frames):
-    """@brief Aggregate detection, point and pose metrics with all target frames in the pose denominator.
+    """@brief 汇总检测、关键点与位姿指标；位姿准确率的分母包含全部目标帧。
 
-    @param[in] frames Scored records from one renderer and split.
-    @return Counts, rates, Wilson interval and conditional error quantiles (m, rad, s).
+    @param[in] frames 来自同一渲染器与划分的已打分记录。
+    @return 计数、比率、Wilson 区间及条件误差分位数（单位 m、rad、s）。
     """
     positives = [f for f in frames if not f["negative"]]
     n = len(positives)
@@ -121,12 +121,12 @@ def aggregate(frames):
 
 
 def predictions(data, rows, predictor):
-    """@brief Yield each row, RGB prediction and inference wall time (s), excluding disk I/O.
+    """@brief 逐个产出记录、RGB 预测及推理墙钟耗时（单位 s，不含磁盘读写）。
 
-    @param[in] data Manifest directory.
-    @param[in] rows Records to process in order.
-    @param[in] predictor RGB-only model.
-    @return Iterator of (record, prediction, inference time in s).
+    @param[in] data 清单目录。
+    @param[in] rows 按顺序处理的记录。
+    @param[in] predictor 纯 RGB 模型。
+    @return (记录, 预测, 推理耗时 s) 的迭代器。
     """
     for row in rows:
         rgb = rgb_image(data / row["image"])
@@ -136,11 +136,11 @@ def predictions(data, rows, predictor):
 
 
 def calibration_rows(manifest, development):
-    """@brief Select Blender val or explicitly designated MuJoCo development frames for threshold selection.
+    """@brief 选出用于门限选择的 Blender val 帧，或显式指定的 MuJoCo 开发集帧。
 
-    @param[in] manifest Validated dataset.
-    @param[in] development True for an explicitly reserved MuJoCo development set.
-    @return Eligible records.
+    @param[in] manifest 已校验的数据集。
+    @param[in] development 为 True 时使用显式保留的 MuJoCo 开发集。
+    @return 符合条件的记录。
     """
     allowed = {("mujoco", "regular"), ("mujoco", "stress")} if development else {("blender", "val")}
     rows = [r for r in manifest["records"] if (r["renderer"], r["split"]) in allowed]
@@ -150,11 +150,11 @@ def calibration_rows(manifest, development):
 
 
 def calibrate(samples, model):
-    """@brief Select confidence by accurate pose count, then visible-point PCK and higher threshold.
+    """@brief 按位姿准确数选择置信度门限，其次比较可见点 PCK，再取较高门限。
 
-    @param[in] samples Cached observations from predictions() on a calibration split.
-    @param[in] model Ordered core-frame model (m).
-    @return Winning accurate count, PCK and threshold.
+    @param[in] samples 在标定划分上由 predictions() 缓存的观测。
+    @param[in] model 有序的核心系模型，单位 m。
+    @return 胜出的准确数、PCK 与门限。
     """
     choices = []
     for threshold in (0.05, 0.1, 0.25, 0.5):
@@ -165,12 +165,12 @@ def calibrate(samples, model):
 
 
 def model_hashes(detector, keypoints, pose=None):
-    """@brief Identify the exact inference checkpoints bound to a selection or evaluation.
+    """@brief 确定与一次选择或评估绑定的推理检查点。
 
-    @param[in] detector Two-stage detector run or checkpoint.
-    @param[in] keypoints Two-stage landmark run or checkpoint.
-    @param[in] pose Direct route run or checkpoint, if selected.
-    @return Role-to-SHA-256 mapping.
+    @param[in] detector 两阶段方案的检测器运行目录或检查点。
+    @param[in] keypoints 两阶段方案的关键点运行目录或检查点。
+    @param[in] pose 直接回归方案的运行目录或检查点（若选用）。
+    @return 角色到 SHA-256 的映射。
     """
     if pose:
         return {"pose": sha256(yolo_weights(pose))}
@@ -188,18 +188,18 @@ def evaluate(
     dev_data=None,
     device="cpu",
 ):
-    """@brief Freeze a model/threshold, then evaluate each held-out renderer and split independently.
+    """@brief 冻结模型与门限后，按渲染器与划分分别独立评估留出集。
 
-    @param[in] data Manifest root containing Blender test or MuJoCo regular/stress.
-    @param[in] out Empty output directory for selection.yaml, frames.yaml and summary.yaml.
-    @param[in] detector YOLO detector run or checkpoint for two-stage inference.
-    @param[in] keypoints LiteHRNet run or checkpoint paired with detector.
-    @param[in] pose Direct YOLO pose run or checkpoint for the baseline.
-    @param[in] keypoint_threshold Predeclared fixed threshold, in (0,1].
-    @param[in] selection Previously frozen selection.yaml bound to these checkpoints.
-    @param[in] dev_data Separate MuJoCo development manifest for optional calibration.
-    @param[in] device Torch inference device.
-    @return Summary with per-renderer and per-split metrics.
+    @param[in] data 含 Blender test 或 MuJoCo regular/stress 的清单根目录。
+    @param[in] out 空输出目录，写入 selection.yaml、frames.yaml 与 summary.yaml。
+    @param[in] detector 两阶段推理使用的 YOLO 检测器运行目录或检查点。
+    @param[in] keypoints 与 detector 配对的 LiteHRNet 运行目录或检查点。
+    @param[in] pose 基线方案使用的 YOLO pose 运行目录或检查点。
+    @param[in] keypoint_threshold 预先声明的固定门限，取值 (0,1]。
+    @param[in] selection 之前已冻结且绑定到这些检查点的 selection.yaml。
+    @param[in] dev_data 可选标定使用的独立 MuJoCo 开发集清单。
+    @param[in] device Torch 推理设备。
+    @return 按渲染器与划分汇总的指标。
     """
     data, out = Path(data).resolve(), Path(out)
     manifest = load_manifest(data)

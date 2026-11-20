@@ -1,4 +1,4 @@
-"""Training variants, provenance and dataset publication through the T3 API."""
+"""通过 T3 接口测试训练变体、来源信息与数据集发布。"""
 
 import errno
 import os
@@ -24,7 +24,7 @@ from tech_core_data_generator.frame import Frame
 
 
 def _frame(theta=0.0, renderer="blender"):
-    """@brief A near-field target with lower landmarks close to the image boundary."""
+    """@brief 近距离目标，下方关键点靠近图像边界。"""
     camera = CameraConfig(96, 72)
     pose = Viewpoint(r=0.35, theta=theta).camera_from_core
     points, _, inside = project_points(np.asarray(geometry_contract()["points_m"]), camera, pose)
@@ -37,7 +37,7 @@ def _frame(theta=0.0, renderer="blender"):
 
 @pytest.fixture
 def dataset(tmp_path):
-    """@brief Write generator-format originals spanning training, validation, test and MuJoCo splits."""
+    """@brief 写出生成器格式的原图，覆盖训练、验证、测试与 MuJoCo 各划分。"""
     root = tmp_path / "raw"
     (root / "images").mkdir(parents=True)
     (root / "masks").mkdir()
@@ -60,7 +60,7 @@ def dataset(tmp_path):
 
 
 def test_affine_projection_mask_and_bounds():
-    """@brief Check labels against optical reprojection and the actual transformed silhouette."""
+    """@brief 用光学重投影与实际变换后的轮廓校验标注。"""
     frame = _frame()
     original = frame.to_record("original", "train", "view")
     record, rgb, mask = augment_record(original, frame.rgb, frame.mask, "variant", 21)
@@ -84,7 +84,7 @@ def test_affine_projection_mask_and_bounds():
 
 
 def test_occluded_outside_and_behind_camera():
-    """@brief Preserve hidden and behind-camera labels and distinguish new occlusion from cropping."""
+    """@brief 保留被遮挡与相机后方的标注，并区分新增遮挡与裁剪。"""
     frame = _frame()
     source = frame.to_record("original", "train", "view")
     source["visibility"][0] = 1
@@ -109,7 +109,7 @@ def test_occluded_outside_and_behind_camera():
 
 
 def test_split_provenance_negatives_and_repeatability(dataset, tmp_path):
-    """@brief Repeat a full CLI run and compare every PNG, record and journal with the first run."""
+    """@brief 重复完整 CLI 运行，逐一比对 PNG、记录与日志是否与首次一致。"""
     first, second = tmp_path / "first", tmp_path / "second"
     for out in (first, second):
         main(["--data", str(dataset), "--out", str(out), "--copies", "2", "--negatives", "0.6", "--seed", "8"])
@@ -143,10 +143,10 @@ def test_split_provenance_negatives_and_repeatability(dataset, tmp_path):
 
 
 def test_none_policy_and_copy_fallback(dataset, tmp_path, monkeypatch):
-    """@brief Keep originals and count backgrounds only against originals with policy none."""
+    """@brief policy 为 none 时保留原图，背景数量只按原图计数。"""
 
     def cross_device_link(*args, **kwargs):
-        """@brief Emulate the filesystem error when source and destination use different mounts."""
+        """@brief 模拟源与目标位于不同挂载点时的文件系统错误。"""
         raise OSError(errno.EXDEV, "Cross-device link")
 
     monkeypatch.setattr(os, "link", cross_device_link)
@@ -166,7 +166,7 @@ def test_none_policy_and_copy_fallback(dataset, tmp_path, monkeypatch):
 
 @pytest.mark.parametrize(("copies", "negatives", "policy"), [(-1, 0, "standard"), (1, -0.1, "none")])
 def test_invalid_options(dataset, tmp_path, copies, negatives, policy):
-    """@brief Reject invalid augmentation settings before writing output."""
+    """@brief 写输出之前拒绝非法的增强参数。"""
     out = tmp_path / "invalid"
     with pytest.raises(ValueError):
         run(dataset, out, copies, negatives, policy, 1)

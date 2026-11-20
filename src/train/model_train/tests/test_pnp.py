@@ -1,4 +1,4 @@
-"""Distorted planar and spatial reference PnP, with missing landmarks and an outlier."""
+"""带畸变的平面与空间参考 PnP，含缺失关键点与一个离群点。"""
 
 import cv2
 import numpy as np
@@ -9,7 +9,7 @@ from tech_core_model_train.pnp import KeypointModel, estimate
 
 @pytest.mark.parametrize("planar", [False, True])
 def test_consensus_with_distortion(planar):
-    """@brief Recover the known core pose despite a mismatched pixel and masked observations."""
+    """@brief 在一个错配像素与若干掩蔽观测下仍能还原已知核心位姿。"""
     model = KeypointModel()
     camera = np.array([[520.0, 0.0, 319.5], [0.0, 510.0, 239.5], [0.0, 0.0, 1.0]])
     dist = np.array([-0.12, 0.035, 0.001, -0.002, 0.004])
@@ -26,5 +26,5 @@ def test_consensus_with_distortion(planar):
 
 
 def test_too_few_points():
-    """@brief Three usable landmarks cannot define a reference pose."""
+    """@brief 仅三个可用关键点时无法确定参考位姿。"""
     assert estimate(KeypointModel(), np.ones((16, 2)), np.arange(16) < 3, np.eye(3)) is None

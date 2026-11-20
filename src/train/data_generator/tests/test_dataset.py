@@ -1,4 +1,4 @@
-"""Installed entry points and the on-disk dataset boundary."""
+"""已安装的入口点与磁盘上的数据集边界。"""
 
 import shutil
 from pathlib import Path
@@ -13,7 +13,7 @@ from tech_core_data_generator.__main__ import main
 
 @pytest.fixture(scope="module")
 def holdout(tmp_path_factory):
-    """@brief Render three source views once for the on-disk contract tests."""
+    """@brief 为磁盘契约测试渲染一次三个源视角。"""
     out = tmp_path_factory.mktemp("holdout")
     main(
         [
@@ -36,7 +36,7 @@ def holdout(tmp_path_factory):
 
 
 def test_generated_records_and_reprojections(holdout):
-    """@brief Check the journal, PNGs and projections against the completed manifest."""
+    """@brief 用已完成的清单校验日志、PNG 与投影。"""
     manifest = load_manifest(holdout)
     assert manifest.keys() == {"geometry", "schema_version", "records", "generator"}
     assert manifest["geometry"] == {**geometry_contract(), "sha256": geometry_sha256()}
@@ -89,10 +89,10 @@ def test_generated_records_and_reprojections(holdout):
 
 
 def test_excludes_known_poses(holdout, tmp_path):
-    """@brief Exercise exclusion with both original and inherited source poses."""
+    """@brief 用原始源位姿与继承的源位姿测试排除功能。"""
     excluded = load_manifest(holdout)
     args = ["mujoco", "--out", str(tmp_path / "fresh"), "--regular", "2", "--stress", "1", "--seed", "4", "--exclude"]
-    # An enhanced dataset has its own generator seed but retains its original source camera poses.
+    # 增强数据集有自己的生成器种子，但保留原始源相机位姿。
     excluded["generator"]["seed"] = 123
     (tmp_path / "manifest.yaml").write_text(yaml.dump(excluded, Dumper=yaml.CSafeDumper))
     main([*args, str(tmp_path)])
@@ -102,7 +102,7 @@ def test_excludes_known_poses(holdout, tmp_path):
 
 
 def test_partial_geometry_and_split_boundaries(holdout, tmp_path):
-    """@brief Reject interrupted datasets, stale coordinates and leaked source views."""
+    """@brief 拒绝中断的数据集、过期坐标与泄漏的源视角。"""
     shutil.copy(holdout / "records.partial.yaml", tmp_path)
     with pytest.raises(FileNotFoundError, match="manifest.yaml"):
         load_manifest(tmp_path)
@@ -122,7 +122,7 @@ def test_partial_geometry_and_split_boundaries(holdout, tmp_path):
 
 
 def test_blender_splits_random_and_studio_appearance(tmp_path):
-    """@brief Change the studio policy while holding source views and lamp times fixed."""
+    """@brief 固定源视角与灯光时刻，切换影棚策略。"""
     args = [
         "blender",
         "--seed",

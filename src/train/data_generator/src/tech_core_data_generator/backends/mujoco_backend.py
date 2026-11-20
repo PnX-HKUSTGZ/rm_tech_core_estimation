@@ -1,4 +1,4 @@
-"""@brief Offscreen MuJoCo rendering of the fixed assembly."""
+"""@brief 固定装配体的 MuJoCo 离屏渲染。"""
 
 import math
 import xml.etree.ElementTree as ET
@@ -12,12 +12,12 @@ from ..lighting import GROUP1, GROUP2, GROUP3
 
 
 class MujocoBackend:
-    """@brief Own a model, data and offscreen OpenGL context for one camera."""
+    """@brief 为单个相机持有模型、数据与离屏 OpenGL 上下文。"""
 
     def __init__(self, camera: CameraConfig):
-        """@brief Freeze the model at its initial joint positions and add the optical camera.
+        """@brief 将模型冻结在初始关节位置，并添加光学相机。
 
-        @param[in] camera Optical calibration (pixel) and clipping distances (m).
+        @param[in] camera 光学标定（单位 pixel）与裁剪距离（单位 m）。
         """
         root = ET.parse(MODEL_DIR / "tech_core.xml").getroot()
         for mesh in root.findall("asset/mesh"):
@@ -41,11 +41,11 @@ class MujocoBackend:
         self.far = camera.far
 
     def render(self, camera_from_core, lamps):
-        """@brief Render RGB8 and optical depth (m, background zero) for a core pose and lamp mapping.
+        """@brief 按核心位姿与灯光映射渲染 RGB8 与光学深度（单位 m，背景为零）。
 
-        @param[in] camera_from_core Core pose in the optical frame (translation in m).
-        @param[in] lamps Materials indexed by mesh name.
-        @return Owned RGB and optical depth arrays.
+        @param[in] camera_from_core 核心系在相机光学系中的位姿，平移单位 m。
+        @param[in] lamps 按网格名索引的材质。
+        @return 独立持有的 RGB 与光学深度数组。
         """
         core_from_camera = camera_from_core[:3, :3].T
         self.model.cam_pos[self.camera_id] = -core_from_camera @ camera_from_core[:3, 3]
@@ -65,5 +65,5 @@ class MujocoBackend:
         return rgb, depth
 
     def close(self):
-        """@brief Release the OpenGL context."""
+        """@brief 释放 OpenGL 上下文。"""
         self.renderer.close()

@@ -1,4 +1,4 @@
-"""@brief Training-split image augmentation using the data_generator manifest contract."""
+"""@brief 基于 data_generator 清单契约的训练集图像增强。"""
 
 import shutil
 from itertools import count
@@ -13,12 +13,12 @@ from .photometric import _photometric
 
 
 def background(rng: np.random.Generator, width: int, height: int) -> np.ndarray:
-    """@brief Draw a smooth procedural texture with coloured line segments.
+    """@brief 绘制带彩色线段的平滑程序化纹理。
 
-    @param[in,out] rng NumPy generator for the texture.
-    @param[in] width Image width (pixel).
-    @param[in] height Image height (pixel).
-    @return H×W×3 RGB uint8 background.
+    @param[in,out] rng 生成纹理用的 NumPy 随机数生成器。
+    @param[in] width 图像宽度，单位 pixel。
+    @param[in] height 图像高度，单位 pixel。
+    @return H×W×3 RGB uint8 背景图。
     """
     grid = rng.uniform(0, 180, (6, 8, 3)).astype(np.float32)
     image = cv2.resize(grid, (width, height), interpolation=cv2.INTER_CUBIC)
@@ -29,7 +29,7 @@ def background(rng: np.random.Generator, width: int, height: int) -> np.ndarray:
 
 
 def _derived_record(source: dict, identity: str, parameters: dict) -> dict:
-    """@brief Assign output paths and provenance to a training derivative."""
+    """@brief 为训练派生样本分配输出路径与来源信息。"""
     return {
         **source,
         "id": identity,
@@ -41,7 +41,7 @@ def _derived_record(source: dict, identity: str, parameters: dict) -> dict:
 
 
 def _bounds(mask: np.ndarray, pixels: list, visibility: list) -> list[float] | None:
-    """@brief Bound the warped silhouette and in-frame labels with clipped exclusive upper edges (pixel)."""
+    """@brief 计算变换后轮廓与图像内标注的包围框，裁剪到图像内，上界不含，单位 pixel。"""
     y, x = np.nonzero(mask)
     points = [point for point, flag in zip(pixels, visibility, strict=True) if flag]
     if points:
@@ -56,15 +56,15 @@ def _bounds(mask: np.ndarray, pixels: list, visibility: list) -> list[float] | N
 def augment_record(
     source: dict, rgb: np.ndarray, mask: np.ndarray, identity: str, seed: int
 ) -> tuple[dict, np.ndarray, np.ndarray]:
-    """@brief Warp one target, replace its background and update its image-space labels.
+    """@brief 对单个目标做几何变换、替换背景并更新图像空间标注。
 
-    @param[in] source Training target record in the generator schema.
-    @param[in] rgb Original H×W×3 RGB uint8 image.
-    @param[in] mask Original H×W silhouette, nonzero on the target.
-    @param[in] identity New record ID.
-    @param[in] seed Seed for replaying this variant independently of the dataset.
-    @return Derived record, augmented RGB image and warped binary silhouette (uint8, 0/255).
-    @note Synthetic occlusion hides landmarks but preserves the projected target silhouette.
+    @param[in] source 生成器格式的训练目标记录。
+    @param[in] rgb 原始 H×W×3 RGB uint8 图像。
+    @param[in] mask 原始 H×W 轮廓，目标处非零。
+    @param[in] identity 新记录 ID。
+    @param[in] seed 随机种子，可脱离数据集单独复现该变体。
+    @return 派生记录、增强后的 RGB 图像及变换后的二值轮廓（uint8，0/255）。
+    @note 合成遮挡会隐藏关键点，但保留目标投影轮廓。
     """
     rng = np.random.default_rng(seed)
     height, width = mask.shape
@@ -115,12 +115,12 @@ def augment_record(
 
 
 def negative_record(source: dict, identity: str, seed: int) -> tuple[dict, np.ndarray, np.ndarray]:
-    """@brief Generate a background-only sample using a training view's image calibration.
+    """@brief 使用某个训练视角的图像标定生成纯背景样本。
 
-    @param[in] source Training record supplying dimensions, calibration and source group.
-    @param[in] identity New record ID.
-    @param[in] seed Seed for the procedural texture.
-    @return Negative record, RGB uint8 image and empty uint8 silhouette.
+    @param[in] source 提供尺寸、标定与来源分组的训练记录。
+    @param[in] identity 新记录 ID。
+    @param[in] seed 程序化纹理的随机种子。
+    @return 负样本记录、RGB uint8 图像及全零 uint8 轮廓。
     """
     record = _derived_record(source, identity, {"background": "procedural", "seed": seed})
     record.update(
@@ -139,7 +139,7 @@ def negative_record(source: dict, identity: str, seed: int) -> tuple[dict, np.nd
 
 
 def _copy_asset(data: Path, out: Path, relative: Path) -> None:
-    """@brief Preserve a dataset-relative PNG byte-for-byte across filesystems."""
+    """@brief 跨文件系统逐字节保留数据集内相对路径的 PNG。"""
     destination = out / relative
     destination.parent.mkdir(parents=True, exist_ok=True)
     try:
@@ -150,7 +150,7 @@ def _copy_asset(data: Path, out: Path, relative: Path) -> None:
 
 
 def _save(out: Path, record: dict, rgb: np.ndarray, mask: np.ndarray) -> dict:
-    """@brief Write both PNG assets before publishing their record."""
+    """@brief 先写入两个 PNG 资源，再发布其记录。"""
     for key, image in (("image", cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)), ("mask", mask)):
         _, encoded = cv2.imencode(".png", image)
         with (out / record[key]).open("xb") as file:
@@ -159,7 +159,7 @@ def _save(out: Path, record: dict, rgb: np.ndarray, mask: np.ndarray) -> dict:
 
 
 def _output_records(data, out, originals, copies, negatives, rng):
-    """@brief Yield completed records, counting background negatives against all output training targets."""
+    """@brief 逐个产出已完成的记录；背景负样本数量按全部输出训练目标计数。"""
     used_ids = {record["id"] for record in originals}
     names = (f"enhanced_{index:07d}" for index in count())
     ids = (name for name in names if name not in used_ids)
@@ -185,16 +185,16 @@ def _output_records(data, out, originals, copies, negatives, rng):
 
 
 def run(data: Path, out: Path, copies: int, negatives: float, policy: str, seed: int) -> None:
-    """@brief Write an enhanced dataset and publish manifest.yaml after all assets are complete.
+    """@brief 写出增强数据集，全部资源完成后再发布 manifest.yaml。
 
-    @param[in] data Completed source dataset directory.
-    @param[in] out New or empty output directory.
-    @param[in] copies Extra variants per training target under the standard policy.
-    @param[in] negatives Ratio of new backgrounds to all output training targets, including variants.
-    @param[in] policy Standard augmentation (standard) or only originals and backgrounds (none).
-    @param[in] seed Nonnegative run seed.
-    @throws ValueError If counts are negative or the source manifest is invalid.
-    @throws FileExistsError If out contains any entries.
+    @param[in] data 已完成的源数据集目录。
+    @param[in] out 新建或为空的输出目录。
+    @param[in] copies standard 策略下每个训练目标额外生成的变体数。
+    @param[in] negatives 新背景数量与全部输出训练目标（含变体）数量之比。
+    @param[in] policy 标准增强（standard），或只保留原图与背景（none）。
+    @param[in] seed 非负的运行种子。
+    @throws ValueError 数量为负或源清单非法时抛出。
+    @throws FileExistsError out 中已有任何条目时抛出。
     """
     if copies < 0 or not negatives >= 0:
         raise ValueError("Expected nonnegative --copies and --negatives")

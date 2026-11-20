@@ -17,7 +17,7 @@ namespace tech_core_estimation_model
 namespace
 {
 
-const std::filesystem::path release(TECH_CORE_GOLDEN_DIR);  ///< T4 release under test.
+const std::filesystem::path release(TECH_CORE_GOLDEN_DIR);  ///< 被测的 T4 发布目录。
 
 TEST(Golden, ReplaysEveryPyTorchFrame)
 {
@@ -72,11 +72,11 @@ TEST(Golden, ReplaysEveryPyTorchFrame)
   std::cout << "Golden detections=" << detections << '/' << cases.size() << " max_deviation_px=" << maximum << '\n';
 }
 
-/** @brief Copy metadata into an isolated release directory for load-failure cases. */
+/** @brief 把元数据复制到隔离的发布目录，用于加载失败用例。 */
 class InvalidRelease : public ::testing::Test
 {
 protected:
-  /** @brief Create a uniquely named scratch directory and load the original metadata. */
+  /** @brief 创建唯一命名的临时目录并读入原始元数据。 */
   void SetUp() override
   {
     std::string pattern = (::testing::TempDir() / std::filesystem::path("t5-release-XXXXXX")).string();
@@ -85,7 +85,7 @@ protected:
     meta = YAML::LoadFile((release / "model_meta.yaml").string());
   }
 
-  /** @brief Remove the temporary release, including its local compilation cache. */
+  /** @brief 删除临时发布目录，包括其中的本地编译缓存。 */
   void TearDown() override
   {
     if (!directory.empty()) {
@@ -93,7 +93,7 @@ protected:
     }
   }
 
-  /** @brief Run the public loader and require a diagnostic identifying the failing release field. */
+  /** @brief 调用公开加载接口，要求诊断信息指出出错的发布目录字段。 */
   void expectError(const std::string & diagnostic, const std::string & device = "CPU")
   {
     std::ofstream(directory / "model_meta.yaml") << meta;
@@ -102,8 +102,8 @@ protected:
     EXPECT_NE(error.find(diagnostic), std::string::npos) << error;
   }
 
-  std::filesystem::path directory;  ///< Isolated model release.
-  YAML::Node meta;                  ///< Metadata to write for the next load.
+  std::filesystem::path directory;  ///< 隔离的模型发布目录。
+  YAML::Node meta;                  ///< 下次加载前写入的元数据。
 };
 
 TEST_F(InvalidRelease, RejectsUnknownSchemaAndWrongCount)

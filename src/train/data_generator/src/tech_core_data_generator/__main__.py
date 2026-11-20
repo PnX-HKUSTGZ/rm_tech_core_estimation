@@ -1,4 +1,4 @@
-"""@brief Generate Blender training data, MuJoCo holdouts or a single labelled preview."""
+"""@brief 生成 Blender 训练数据、MuJoCo 留出集或单张带标注预览。"""
 
 import argparse
 import sys
@@ -13,9 +13,9 @@ from .simulator import TechCoreSimulator
 
 
 def main(argv: list[str] | None = None):
-    """@brief Render the dataset or preview requested on the command line.
+    """@brief 按命令行参数渲染数据集或预览。
 
-    @param[in] argv Arguments after the module name, or None to read sys.argv.
+    @param[in] argv 模块名之后的参数；为 None 时读取 sys.argv。
     """
     parser = argparse.ArgumentParser(description=__doc__.removeprefix("@brief "))
     commands = parser.add_subparsers(dest="command", required=True)

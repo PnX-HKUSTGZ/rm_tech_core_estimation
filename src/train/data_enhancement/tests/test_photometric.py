@@ -1,11 +1,11 @@
-"""Public online appearance transform used by the training DataLoader."""
+"""训练 DataLoader 使用的在线外观变换公开接口。"""
 
 import numpy as np
 from tech_core_data_enhancement import photometric
 
 
 def test_seeded_rgb_transform_preserves_landmark_location():
-    """@brief Preserve the position and colour channels of an off-centre bright marker."""
+    """@brief 偏离中心的亮色标记保持位置与颜色通道不变。"""
     rgb = np.zeros((32, 48, 3), np.uint8)
     rgb[4:12, 22:32, 0] = 230
     original = rgb.copy()

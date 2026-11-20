@@ -13,7 +13,7 @@
 namespace
 {
 
-/** @brief Linearly interpolate a quantile of ordered frame durations (s). */
+/** @brief 对已排序的单帧耗时线性插值求分位数，单位 s。 */
 double quantile(const std::vector<double> & seconds, double fraction)
 {
   const double index = fraction * (seconds.size() - 1);
@@ -24,7 +24,7 @@ double quantile(const std::vector<double> & seconds, double fraction)
 
 }  // namespace
 
-/** @brief Measure synchronous end-to-end inference on the release's golden frames after warm-up. */
+/** @brief 预热后在发布目录的金标准帧上测量同步端到端推理耗时。 */
 int main(int argc, char ** argv)
 {
   using namespace tech_core_estimation_model;

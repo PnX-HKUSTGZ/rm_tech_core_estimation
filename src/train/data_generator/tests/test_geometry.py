@@ -1,4 +1,4 @@
-"""Geometry fingerprint, optical convention and sampling contract."""
+"""几何指纹、光学约定与采样契约。"""
 
 import numpy as np
 import pytest
@@ -8,7 +8,7 @@ from tech_core_data_generator.geometry import MODEL_DIR, read_obj
 
 
 def test_geometry_matches_rule_mesh_and_published_fingerprint():
-    """@brief Pin the packaged geometry to the physical model, rule lengths and digest."""
+    """@brief 将随包几何固定到实物模型、规则尺寸与摘要。"""
     contract = geometry_contract()
     assert contract["profile"] == "shell5_rule_lengths_model_reference_v2"
     assert len(set(contract["names"])) == 16
@@ -26,7 +26,7 @@ def test_geometry_matches_rule_mesh_and_published_fingerprint():
 
 
 def test_front_camera_projection_and_clipping():
-    """@brief Check an analytic projection along the core X axis."""
+    """@brief 检查沿核心系 X 轴的解析投影。"""
     camera = CameraConfig(160, 120, fovy=np.pi / 2)
     view = Viewpoint(0.8, target=(0, 0, 0))
     pixels, depths, inside = project_points(
@@ -39,7 +39,7 @@ def test_front_camera_projection_and_clipping():
 
 
 def test_reject_invalid_camera_settings():
-    """@brief Exercise invalid projection geometry exposed through the preview options."""
+    """@brief 通过预览选项测试非法投影几何。"""
     with pytest.raises(ValueError, match="image size"):
         CameraConfig(width=0)
     with pytest.raises(ValueError, match="radius"):
@@ -57,7 +57,7 @@ def test_reject_invalid_camera_settings():
     ],
 )
 def test_seeded_distributions(name, low, high):
-    """@brief Measure support and mixture weights for a fixed random stream."""
+    """@brief 对固定随机数流测量取值范围与混合权重。"""
     rng = np.random.default_rng(41)
     views = [sample_random(rng, name) for _ in range(2000)]
     again = np.random.default_rng(41)
@@ -67,5 +67,5 @@ def test_seeded_distributions(name, low, high):
     np.testing.assert_allclose(samples.min(axis=0), low, atol=0.025)
     np.testing.assert_allclose(samples.max(axis=0), high, atol=0.025)
     if name == "training":
-        # Only the 15% wide component samples radii below 0.4 m; its fraction there is 0.15 / 0.75.
+        # 只有占 15% 的宽分布分量会采到 0.4 m 以下的半径；其在该区间内的占比为 0.15 / 0.75。
         assert np.mean(samples[:, 0] < 0.4) == pytest.approx(0.15 * 0.15 / 0.75, abs=0.012)

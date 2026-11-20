@@ -53,7 +53,7 @@ cv::Matx23d squareCrop(const cv::Mat & bgr, cv::Rect2d box, int side, double pad
   const double half_span = step * (side - 1) / 2;
   const cv::Matx23d image_from_crop(step, 0, box.x + box.width / 2 - half_span,
                                     0, step, box.y + box.height / 2 - half_span);
-  // The training crop uses full bilinear weights. OpenCV 4 warpAffine rounds positions to 1/32 pixel.
+  // 训练端裁剪使用完整双线性权重；OpenCV 4 的 warpAffine 会把位置舍入到 1/32 pixel。
   const auto sample = [&](int x, int y) -> cv::Vec3d {
     if (x >= 0 && x < bgr.cols && y >= 0 && y < bgr.rows) {
       return bgr.at<cv::Vec3b>(y, x);
@@ -81,13 +81,13 @@ cv::Matx23d squareCrop(const cv::Mat & bgr, cv::Rect2d box, int side, double pad
 namespace
 {
 
-/** @brief Fit the stationary point of the local log heatmap, retaining a concave nearby maximum. */
+/** @brief 拟合局部对数热图的驻点；仅当局部为凹且极值在邻近时采用。 */
 cv::Point2d peakOffset(const cv::Mat & map, cv::Point peak)
 {
   if (peak.x < 1 || peak.y < 1 || peak.x >= map.cols - 1 || peak.y >= map.rows - 1) {
     return {};
   }
-  // Leave the ROI attached so the Gaussian uses its neighbours in the original heatmap.
+  // ROI 不与原热图分离，使高斯模糊能用到原热图中的邻域像素。
   const cv::Rect region(peak.x - 1, peak.y - 1, 3, 3);
   cv::Mat1f smooth;
   cv::GaussianBlur(map(region), smooth, {3, 3}, 0);

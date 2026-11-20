@@ -1,4 +1,4 @@
-"""Integration tests against real offscreen renderers."""
+"""基于真实离屏渲染器的集成测试。"""
 
 import os
 import shutil
@@ -13,14 +13,14 @@ from tech_core_data_generator.appearance import sample_appearance
 
 @pytest.fixture(scope="module")
 def mujoco_sim():
-    """@brief Share the EGL context across the depth and label checks."""
+    """@brief 深度与标注检查共用同一个 EGL 上下文。"""
     with TechCoreSimulator() as simulator:
         yield simulator
 
 
 @pytest.fixture(scope="module")
 def blender_sim():
-    """@brief Share a Cycles scene across frames, exercising its persistent state."""
+    """@brief 多帧共用一个 Cycles 场景，测试其持久状态。"""
     if not os.getenv("BLENDER_EXECUTABLE") and not shutil.which("blender"):
         pytest.skip("Blender is absent")
     with TechCoreSimulator("blender", blender_samples=2) as simulator:
@@ -28,7 +28,7 @@ def blender_sim():
 
 
 def test_visibility_clipping_and_behind_camera(mujoco_sim):
-    """@brief Distinguish missing image coordinates from valid but occluded labels."""
+    """@brief 区分缺失的图像坐标与有效但被遮挡的标注。"""
     assert np.all(mujoco_sim.render().visibility == 2)
     frame = mujoco_sim.render(Viewpoint(0.2, 0.9, -0.6))
     assert frame.visibility[[0, 5, 9]].tolist() == [2, 1, 0]
@@ -44,7 +44,7 @@ def test_visibility_clipping_and_behind_camera(mujoco_sim):
 
 @pytest.mark.parametrize("view", [Viewpoint(), Viewpoint(0.65, 0.5, 0.3, roll=0.15)])
 def test_matching_optical_depth_and_silhouette(mujoco_sim, blender_sim, view):
-    """@brief Compare depth away from raster edges and silhouette intersection over union."""
+    """@brief 比较远离栅格边缘处的深度及轮廓交并比。"""
     a, b = [
         sim.render(view, "step5_rotating", "blue", target_angle=-0.6, current_angle=0.6)
         for sim in (mujoco_sim, blender_sim)
@@ -62,7 +62,7 @@ def test_matching_optical_depth_and_silhouette(mujoco_sim, blender_sim, view):
 
 
 def test_blender_appearance_resets_between_frames(blender_sim):
-    """@brief Exercise a studio, randomized, studio sequence on one worker."""
+    """@brief 在同一工作进程上依次运行影棚、随机化、影棚三种外观。"""
     view = Viewpoint(0.8, 0.2, 0.15)
     first = blender_sim.render(view)
     changed = blender_sim.render(view, appearance=sample_appearance(np.random.default_rng(3), view))
@@ -73,7 +73,7 @@ def test_blender_appearance_resets_between_frames(blender_sim):
 
 
 def test_preview_writes_original_and_overlay(tmp_path):
-    """@brief Verify both image products from the preview entry point."""
+    """@brief 校验预览入口输出的两种图像产物。"""
     main(["preview", "--out", str(tmp_path), "--width", "96", "--height", "72", "--roll", "0.1"])
     assert {path.name for path in tmp_path.iterdir()} == {"frame.png", "overlay.png"}
     with Image.open(tmp_path / "frame.png") as rgb, Image.open(tmp_path / "overlay.png") as overlay:

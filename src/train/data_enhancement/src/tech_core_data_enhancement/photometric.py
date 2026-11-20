@@ -1,18 +1,18 @@
-"""@brief Colour, lighting and camera-response augmentation in image coordinates."""
+"""@brief 图像坐标不变的颜色、光照与相机响应增强。"""
 
 import cv2
 import numpy as np
 
 
 def _photometric(rgb: np.ndarray, rng: np.random.Generator) -> tuple[np.ndarray, dict]:
-    """@brief Apply the shared appearance policy and return the sampled operation parameters."""
+    """@brief 应用共用的外观增强策略，并返回采样得到的操作参数。"""
     if rng.random() < 0.15:
         return rgb.copy(), {}
 
     image = rgb.astype(np.float32) / 255
     maximum, minimum = image.max(axis=2), image.min(axis=2)
     saturation = (maximum - minimum) / np.maximum(maximum, 0.01)
-    # Keep bright coloured lamps and white highlights distinguishable as exposure falls.
+    # 曝光降低时，仍要让明亮的彩色灯与白色高光可区分。
     emission = np.clip((maximum - 0.55) / 0.35, 0, 1) * np.maximum(saturation, np.clip((minimum - 0.8) / 0.2, 0, 1))
     gamma = rng.uniform(0.75, 2.6)
     gain = float(np.exp(rng.uniform(np.log(0.32), np.log(1.5))))
@@ -59,10 +59,10 @@ def _photometric(rgb: np.ndarray, rng: np.random.Generator) -> tuple[np.ndarray,
 
 
 def photometric(rgb: np.ndarray, rng: np.random.Generator) -> np.ndarray:
-    """@brief Apply training-time appearance augmentation at fixed image coordinates.
+    """@brief 在固定图像坐标下应用训练期外观增强。
 
-    @param[in] rgb H×W×3 RGB uint8 image.
-    @param[in,out] rng NumPy generator for this training sample.
-    @return New RGB uint8 image with the same shape and geometry.
+    @param[in] rgb H×W×3 RGB uint8 图像。
+    @param[in,out] rng 该训练样本使用的 NumPy 随机数生成器。
+    @return 形状与几何不变的新 RGB uint8 图像。
     """
     return _photometric(rgb, rng)[0]

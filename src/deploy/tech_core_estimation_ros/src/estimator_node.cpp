@@ -30,15 +30,15 @@ using CameraInfo = sensor_msgs::msg::CameraInfo;
 using Image = sensor_msgs::msg::Image;
 using Clock = std::chrono::steady_clock;
 
-/** @brief ROS component publishing the core pose from a calibrated camera stream. */
+/** @brief 由已标定相机图像流发布核心位姿的 ROS 组件。 */
 class EstimatorNode : public rclcpp::Node
 {
 public:
   /**
-   * @brief Load the release and subscribe to the synchronized raw camera topics.
-   * @param[in] options Component options and startup parameter overrides.
-   * @throws std::invalid_argument The requested inference backend is unavailable.
-   * @throws std::runtime_error The model release or device could not be loaded.
+   * @brief 加载发布目录并订阅同步的原始相机话题。
+   * @param[in] options 组件选项及启动参数覆盖。
+   * @throws std::invalid_argument 请求的推理后端不可用。
+   * @throws std::runtime_error 无法加载模型发布目录或推理设备。
    */
   explicit EstimatorNode(const rclcpp::NodeOptions & options)
   : Node("tech_core_estimation", options), buffer_(get_clock()), listener_(buffer_, this), updater_(this)
@@ -85,7 +85,7 @@ public:
   }
 
 private:
-  /** @brief Process one raw image and its time-matched calibration in the camera optical frame. */
+  /** @brief 处理一帧原始图像及其时间匹配的相机光学系标定。 */
   void onFrame(const Image::ConstSharedPtr & image, const CameraInfo::ConstSharedPtr & info)
   {
     ++frames_;
@@ -137,7 +137,7 @@ private:
     }
   }
 
-  /** @brief Look up the camera pose at exposure time and publish the resulting world-frame pose. */
+  /** @brief 查询曝光时刻的相机位姿，并发布得到的世界系位姿。 */
   void publishPose(const std_msgs::msg::Header & header, const Eigen::Isometry3d & camera_from_core)
   {
     geometry_msgs::msg::TransformStamped world_from_camera;
@@ -163,7 +163,7 @@ private:
     }
   }
 
-  /** @brief Report rates over the last diagnostic interval, cumulative outcomes and last stage durations. */
+  /** @brief 报告上一诊断周期内的频率、累计结果计数及最近一次各阶段耗时。 */
   void diagnostics(diagnostic_updater::DiagnosticStatusWrapper & status)
   {
     const auto now = Clock::now();
@@ -194,33 +194,33 @@ private:
     last_report_ = now;
   }
 
-  std::unique_ptr<model::TechCoreModel> model_;  ///< Loaded release for this stream.
-  pnp::KeypointModel keypoints_;  ///< Release points in the core frame (m).
-  pnp::PnPConfig config_;  ///< Startup PnP settings.
-  CameraInfo::ConstSharedPtr calibration_;  ///< Last K and D submitted to the solver factory.
-  std::optional<pnp::PnPEstimator> estimator_;  ///< Solver for that calibration, empty on creation failure.
-  std::string world_frame_;  ///< Arm base TF frame.
-  std::string core_frame_;  ///< Output TF child frame.
-  double tf_timeout_;  ///< Maximum wait for the camera transform (s).
-  tf2_ros::Buffer buffer_;  ///< Time-indexed transforms.
-  tf2_ros::TransformListener listener_;  ///< Receives TF while the camera callback waits.
-  std::unique_ptr<tf2_ros::TransformBroadcaster> broadcaster_;  ///< Enabled by publish_tf.
-  rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr pose_pub_;  ///< World-frame core poses.
-  rclcpp::Publisher<Image>::SharedPtr debug_pub_;  ///< Annotated camera images.
-  image_transport::CameraSubscriber camera_sub_;  ///< Synchronized image and intrinsics.
-  diagnostic_updater::Updater updater_;  ///< Periodic diagnostics on the default callback group.
-  std::uint64_t frames_ = 0;  ///< Synchronized input pairs.
-  std::uint64_t published_ = 0;  ///< Published world-frame poses.
-  std::uint64_t no_detection_ = 0;  ///< Images without a core detection.
-  std::uint64_t invalid_calibration_ = 0;  ///< Frames without a usable pinhole calibration.
-  std::uint64_t invalid_image_ = 0;  ///< Frames rejected by image conversion.
-  std::uint64_t tf_timeout_count_ = 0;  ///< Successful estimates without a camera transform.
-  std::map<PoseFailure, std::uint64_t> pnp_failures_;  ///< Failed estimates per solver reason.
-  double inference_s_ = 0.0;  ///< Last inference duration (s).
-  double solve_s_ = 0.0;  ///< Last detected frame's solve duration, zero on a miss (s).
-  Clock::time_point last_report_ = Clock::now();  ///< Start of the diagnostic interval.
-  std::uint64_t previous_frames_ = 0;  ///< Input count at the previous report.
-  std::uint64_t previous_published_ = 0;  ///< Pose count at the previous report.
+  std::unique_ptr<model::TechCoreModel> model_;  ///< 本图像流加载的发布目录。
+  pnp::KeypointModel keypoints_;  ///< 发布目录中的核心系关键点，单位 m。
+  pnp::PnPConfig config_;  ///< 启动时读取的 PnP 参数。
+  CameraInfo::ConstSharedPtr calibration_;  ///< 最近一次提交给解算器工厂的内参矩阵与畸变参数。
+  std::optional<pnp::PnPEstimator> estimator_;  ///< 对应该标定的解算器；创建失败时为空。
+  std::string world_frame_;  ///< 机械臂基座（世界系）的 TF frame。
+  std::string core_frame_;  ///< 输出 TF 的子 frame。
+  double tf_timeout_;  ///< 等待相机变换的最长时间，单位 s。
+  tf2_ros::Buffer buffer_;  ///< 按时间索引的变换缓存。
+  tf2_ros::TransformListener listener_;  ///< 在相机回调等待期间接收 TF。
+  std::unique_ptr<tf2_ros::TransformBroadcaster> broadcaster_;  ///< 由 publish_tf 参数启用。
+  rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr pose_pub_;  ///< 世界系中的核心位姿。
+  rclcpp::Publisher<Image>::SharedPtr debug_pub_;  ///< 标注后的相机图像。
+  image_transport::CameraSubscriber camera_sub_;  ///< 同步后的图像与内参。
+  diagnostic_updater::Updater updater_;  ///< 在默认回调组上运行的周期诊断。
+  std::uint64_t frames_ = 0;  ///< 同步输入对计数。
+  std::uint64_t published_ = 0;  ///< 已发布的世界系位姿计数。
+  std::uint64_t no_detection_ = 0;  ///< 未检出核心的图像计数。
+  std::uint64_t invalid_calibration_ = 0;  ///< 无可用针孔标定的帧计数。
+  std::uint64_t invalid_image_ = 0;  ///< 图像转换失败的帧计数。
+  std::uint64_t tf_timeout_count_ = 0;  ///< 解算成功但缺少相机变换的计数。
+  std::map<PoseFailure, std::uint64_t> pnp_failures_;  ///< 按解算失败原因分类的计数。
+  double inference_s_ = 0.0;  ///< 最近一次推理耗时，单位 s。
+  double solve_s_ = 0.0;  ///< 最近一帧的解算耗时，未检出时为零，单位 s。
+  Clock::time_point last_report_ = Clock::now();  ///< 诊断周期起始时刻。
+  std::uint64_t previous_frames_ = 0;  ///< 上次报告时的输入计数。
+  std::uint64_t previous_published_ = 0;  ///< 上次报告时的位姿计数。
 };
 
 }  // namespace tech_core_estimation_ros

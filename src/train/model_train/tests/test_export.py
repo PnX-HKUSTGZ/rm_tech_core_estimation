@@ -1,4 +1,4 @@
-"""Offline deployment release round trip through real single-object and landmark networks."""
+"""用真实的单目标检测网络与关键点网络完成离线部署发布目录的往返测试。"""
 
 import numpy as np
 import pytest
@@ -14,14 +14,14 @@ from tech_core_model_train.litehrnet.model import LiteKeypoints
 
 
 def test_export_and_golden_replay(tmp_path):
-    """@brief Verify a detected core end to end and reject a displaced golden pixel or different detection."""
+    """@brief 端到端校验检出的核心，并拒绝偏移的金标准像素或不同的检测结果。"""
     torch.manual_seed(3)
     torch.set_num_threads(2)
     data, detect, lite = (tmp_path / s for s in ("data", "detect", "lite"))
     dataset(data)
     (detect / "weights").mkdir(parents=True)
     lite.mkdir()
-    # A fixed class bias exercises the landmark graph independently of a training run or network access.
+    # 固定的类别偏置使关键点计算图可独立于训练运行或网络访问进行测试。
     model = DetectionModel("yolo11n.yaml", nc=1, verbose=False)
     with torch.no_grad():
         for branch in model.model[-1].cv3:

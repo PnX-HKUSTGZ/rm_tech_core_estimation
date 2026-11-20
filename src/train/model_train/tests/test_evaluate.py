@@ -1,4 +1,4 @@
-"""Failure-inclusive held-out metrics and threshold selection boundaries."""
+"""计入失败帧的留出集指标与门限选择边界。"""
 
 import cv2
 import numpy as np
@@ -10,7 +10,7 @@ from tech_core_model_train.prediction import Prediction
 
 
 def test_pose_denominator_and_background_precision():
-    """@brief A hit, miss, failed solve, inaccurate solve and background FP use distinct denominators."""
+    """@brief 检出、漏检、解算失败、解算不准与背景误检分别使用各自的分母。"""
     geometry = KeypointModel()
     camera = np.array([[240.0, 0.0, 160.0], [0.0, 240.0, 120.0], [0.0, 0.0, 1.0]])
     pose = np.eye(4)
@@ -54,7 +54,7 @@ def test_pose_denominator_and_background_precision():
 
 
 def test_calibration_domains():
-    """@brief Test and MuJoCo acceptance rows cannot implicitly become validation samples."""
+    """@brief 测试集与 MuJoCo 验收集记录不会被隐式当作验证样本。"""
     rows = [{"renderer": "blender", "split": "test"}, {"renderer": "mujoco", "split": "regular"}]
     with pytest.raises(ValueError, match="calibration"):
         calibration_rows({"records": rows}, False)

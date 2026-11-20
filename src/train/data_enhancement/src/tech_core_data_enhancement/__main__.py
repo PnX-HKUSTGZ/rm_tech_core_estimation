@@ -1,4 +1,4 @@
-"""@brief Generate augmented training images and procedural background negatives."""
+"""@brief 生成增强训练图像与程序化背景负样本。"""
 
 import argparse
 from pathlib import Path
@@ -7,9 +7,9 @@ from .offline import run
 
 
 def main(argv: list[str] | None = None) -> None:
-    """@brief Build the enhanced dataset requested on the command line.
+    """@brief 按命令行参数生成增强数据集。
 
-    @param[in] argv Arguments after the module name, or None to read sys.argv.
+    @param[in] argv 模块名之后的参数；为 None 时读取 sys.argv。
     """
     parser = argparse.ArgumentParser(description=__doc__.removeprefix("@brief "))
     parser.add_argument("--data", required=True, type=Path, help="Input dataset directory")

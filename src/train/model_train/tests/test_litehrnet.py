@@ -1,4 +1,4 @@
-"""LiteHRNet heatmap and checkpoint contracts."""
+"""LiteHRNet 热图与检查点契约。"""
 
 import numpy as np
 import pytest
@@ -9,7 +9,7 @@ from tech_core_model_train.litehrnet.predict import load_keypoints
 
 
 def test_subpixel_heatmaps():
-    """@brief Gaussian targets recover fractional crop pixels, with zero maps for missing points."""
+    """@brief 高斯目标能还原裁剪图中的小数像素坐标，缺失点对应全零热图。"""
     points = np.array([[32.25, 140.7], [0.0, 0.0], [np.nan, np.nan]])
     maps = heatmap_targets(points, [True, True, False])
     xy, peaks = decode_heatmaps(maps)
@@ -20,7 +20,7 @@ def test_subpixel_heatmaps():
 
 @pytest.mark.parametrize("variant", [18, 30])
 def test_output_shapes(variant):
-    """@brief Both HKUST variants produce the canonical 16 heatmaps and in-frame logits."""
+    """@brief 两个 HKUST 变体都输出规范的 16 张热图与图像内 logit。"""
     torch.set_num_threads(2)
     with torch.no_grad():
         maps, logits = LiteKeypoints(variant).eval()(torch.zeros(1, 3, 256, 256))
@@ -28,7 +28,7 @@ def test_output_shapes(variant):
 
 
 def test_mismatched_checkpoint(tmp_path):
-    """@brief Geometry rejection precedes loading the network parameters."""
+    """@brief 在加载网络参数之前先进行几何校验并拒绝不符者。"""
     path = tmp_path / "best.pt"
     torch.save({"geometry_sha256": "wrong-order"}, path)
     with pytest.raises(ValueError, match="geometry SHA-256"):

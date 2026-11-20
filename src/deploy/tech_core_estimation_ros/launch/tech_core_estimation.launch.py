@@ -7,7 +7,7 @@ from launch_ros.substitutions import FindPackageShare
 
 
 def generate_launch_description():
-    """Run the estimator on a remappable synchronized camera stream."""
+    """在可重映射的同步相机图像流上运行位姿估计节点。"""
     package = 'tech_core_estimation_ros'
     parameters = PathJoinSubstitution([FindPackageShare(package), 'config', 'tech_core_estimation.yaml'])
     return LaunchDescription([

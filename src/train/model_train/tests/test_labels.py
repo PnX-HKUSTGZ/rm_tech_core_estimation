@@ -1,4 +1,4 @@
-"""Manifest-to-YOLO boundary tests."""
+"""清单到 YOLO 格式的边界测试。"""
 
 from pathlib import Path
 
@@ -11,7 +11,7 @@ from tech_core_model_train.labels import read_yaml, write_yaml, yolo_dataset
 
 
 def dataset(root: Path):
-    """@brief Write a two-frame Blender test split with one negative and one partially occluded core."""
+    """@brief 写出两帧 Blender 测试划分：一个负样本、一个部分遮挡的核心。"""
     root.mkdir()
     rng = np.random.default_rng(4)
     cv2.imwrite(str(root / "core.png"), rng.integers(0, 256, (80, 100, 3), np.uint8))
@@ -39,7 +39,7 @@ def dataset(root: Path):
 
 @pytest.mark.parametrize("task, columns", [("detect", 5), ("pose", 53)])
 def test_dataset(tmp_path, task, columns):
-    """@brief Labels carry normalized boxes, per-point visibility and task-specific background handling."""
+    """@brief 标签包含归一化检测框、逐点可见性，以及按任务区分的背景处理。"""
     data = tmp_path / "data"
     dataset(data)
     out = tmp_path / task
@@ -57,7 +57,7 @@ def test_dataset(tmp_path, task, columns):
 
 
 def test_wrong_geometry(tmp_path):
-    """@brief Reject a manifest whose point ordering changed under the original digest."""
+    """@brief 拒绝关键点顺序已变但仍使用原摘要的清单。"""
     data = tmp_path / "data"
     manifest = dataset(data)
     manifest["geometry"]["names"].reverse()

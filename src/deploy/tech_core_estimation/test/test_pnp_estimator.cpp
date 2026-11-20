@@ -10,11 +10,11 @@ namespace tech_core_estimation
 namespace
 {
 
-/** @brief Synthetic calibration and model shared by the single-frame tests. */
+/** @brief 单帧测试共用的合成标定与模型。 */
 class PnPTest : public ::testing::Test
 {
 protected:
-  /** @brief Place the core in front of a camera with radial distortion. */
+  /** @brief 把核心放在带径向畸变的相机前方。 */
   PnPTest()
   {
     camera.camera_matrix << 600., 0., 320., 0., 600., 240., 0., 0., 1.;
@@ -24,7 +24,7 @@ protected:
     camera_from_core.translation() = Eigen::Vector3d(0.01, 0.01, 0.7);
   }
 
-  /** @brief Project the fixture model into the distorted image in pixels. */
+  /** @brief 把夹具模型投影到畸变图像，单位 pixel。 */
   Observation project() const
   {
     Observation observation;
@@ -39,12 +39,12 @@ protected:
     return observation;
   }
 
-  /** @brief Core points in m. */
+  /** @brief 核心系关键点，单位 m。 */
   KeypointModel model{{{-0.1, -0.1, -0.1}, {0.1, -0.1, -0.1}, {-0.1, 0.1, -0.1}, {0.1, 0.1, -0.1},
                        {0., 0., 0.15}, {0.06, -0.01, 0.12}, {-0.04, 0.08, 0.1}, {0.02, 0.05, 0.12}}};
-  CameraIntrinsics camera;  ///< Camera calibration in pixels.
-  Eigen::Isometry3d camera_from_core = Eigen::Isometry3d::Identity();  ///< Ground truth, translation in m.
-  std::string error;  ///< Creation diagnostic.
+  CameraIntrinsics camera;  ///< 相机标定，单位 pixel。
+  Eigen::Isometry3d camera_from_core = Eigen::Isometry3d::Identity();  ///< 真值位姿，平移单位 m。
+  std::string error;  ///< 创建失败原因。
 };
 
 TEST_F(PnPTest, PlanarDistortedConsensus)

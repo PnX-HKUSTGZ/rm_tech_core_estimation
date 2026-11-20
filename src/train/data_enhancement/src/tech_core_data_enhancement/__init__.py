@@ -1,4 +1,4 @@
-"""@brief Image-space augmentation for technology core training data."""
+"""@brief 科技核心训练数据的图像空间增强。"""
 
 from .photometric import photometric
 

@@ -1,4 +1,4 @@
-"""@brief Pretrained YOLO11 detector and direct 16-point pose baseline."""
+"""@brief 预训练 YOLO11 检测器与直接回归 16 点的 pose 基线。"""
 
 from pathlib import Path
 
@@ -12,21 +12,21 @@ from .prediction import Prediction
 
 
 def yolo_weights(path):
-    """@brief Resolve a YOLO experiment directory or an explicit checkpoint.
+    """@brief 解析 YOLO 实验目录或显式检查点。
 
-    @param[in] path Detector or pose experiment directory or checkpoint.
-    @return Checkpoint path.
+    @param[in] path 检测器或 pose 的实验目录或检查点。
+    @return 检查点路径。
     """
     path = Path(path)
     return path / "weights/best.pt" if path.is_dir() else path
 
 
 def load_yolo(path, task):
-    """@brief Load a trained checkpoint with the canonical landmark identity and requested task.
+    """@brief 加载训练好的检查点，并校验规范关键点标识与任务类型。
 
-    @param[in] path Experiment directory or checkpoint.
-    @param[in] task Expected YOLO task.
-    @return Ultralytics model.
+    @param[in] path 实验目录或检查点。
+    @param[in] task 期望的 YOLO 任务。
+    @return Ultralytics 模型。
     """
     model = YOLO(str(yolo_weights(path)))
     check_geometry(model.ckpt)
@@ -36,17 +36,17 @@ def load_yolo(path, task):
 
 
 def train_yolo(data, out, task="detect", size="n", epochs=20, imgsz=320, batch=8, device="cpu", seed=20261118):
-    """@brief Train from the Ultralytics COCO release, keeping validation-selected weights.
+    """@brief 从 Ultralytics COCO 发布权重开始训练，保留在验证集上选出的权重。
 
-    @param[in] data Completed training manifest directory.
-    @param[in] out Empty experiment directory for weights, labels and experiment.yaml.
-    @param[in] task detect or pose.
-    @param[in] size YOLO11 model scale.
-    @param[in] epochs Training budget in passes over the dataset.
-    @param[in] imgsz Letterboxed network input side (pixel).
-    @param[in] batch Images per step.
-    @param[in] device Torch device name.
-    @param[in] seed Reproducible training seed.
+    @param[in] data 已完成的训练清单目录。
+    @param[in] out 存放权重、标签与 experiment.yaml 的空实验目录。
+    @param[in] task detect 或 pose。
+    @param[in] size YOLO11 模型规模。
+    @param[in] epochs 训练预算，即遍历数据集的轮数。
+    @param[in] imgsz letterbox 后的网络输入边长，单位 pixel。
+    @param[in] batch 每步图像数。
+    @param[in] device Torch 设备名。
+    @param[in] seed 可复现的训练种子。
     """
     data, out = Path(data).resolve(), Path(out).resolve()
     require_empty(out)
@@ -58,7 +58,7 @@ def train_yolo(data, out, task="detect", size="n", epochs=20, imgsz=320, batch=8
     best_epoch = 0
 
     def record_epoch(trainer):
-        """@brief Capture Ultralytics' selected epoch before final_eval strips optimizer and epoch."""
+        """@brief 在 final_eval 去除优化器与轮次信息之前记录 Ultralytics 选中的轮次。"""
         nonlocal best_epoch
         if trainer.fitness == trainer.best_fitness:
             best_epoch = trainer.epoch + 1
@@ -111,24 +111,24 @@ def train_yolo(data, out, task="detect", size="n", epochs=20, imgsz=320, batch=8
 
 
 class YoloPosePredictor:
-    """@brief Direct YOLO11-pose inference on an RGB image using the highest-scoring box."""
+    """@brief 在 RGB 图像上直接做 YOLO11-pose 推理，取得分最高的检测框。"""
 
     def __init__(self, weights, device="cpu"):
-        """@brief Load the trained pose weights or run directory on the given Torch device.
+        """@brief 在指定 Torch 设备上加载训练好的 pose 权重或运行目录。
 
-        @param[in] weights Pose experiment or checkpoint.
-        @param[in] device Torch device.
+        @param[in] weights pose 实验目录或检查点。
+        @param[in] device Torch 设备。
         """
-        ## Direct pose model with ordered 16-point output.
+        ## 输出有序 16 点的直接 pose 模型。
         self.model = load_yolo(weights, "pose")
-        ## Ultralytics inference device.
+        ## Ultralytics 推理设备。
         self.device = device
 
     def predict(self, rgb):
-        """@brief Infer original-image box and ordered XY landmarks (pixel) from RGB alone.
+        """@brief 仅用 RGB 推理原图检测框与有序 XY 关键点（单位 pixel）。
 
-        @param[in] rgb Original RGB8 image.
-        @return Prediction in original image coordinates (pixel).
+        @param[in] rgb 原始 RGB8 图像。
+        @return 原图坐标下的预测，单位 pixel。
         """
         result = self.model.predict(
             np.ascontiguousarray(rgb[:, :, ::-1]),

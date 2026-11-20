@@ -1,4 +1,4 @@
-"""@brief Two-stage RGB inference shared by development selection, evaluation and deployment export."""
+"""@brief 开发集选择、评估与部署导出共用的两阶段 RGB 推理。"""
 
 from pathlib import Path
 
@@ -13,20 +13,20 @@ from .model import LiteKeypoints, decode_heatmaps
 
 
 def lite_weights(path):
-    """@brief Resolve a LiteHRNet experiment or explicit checkpoint.
+    """@brief 解析 LiteHRNet 实验目录或显式检查点。
 
-    @param[in] path LiteHRNet experiment directory or checkpoint.
-    @return Checkpoint path.
+    @param[in] path LiteHRNet 实验目录或检查点。
+    @return 检查点路径。
     """
     path = Path(path)
     return path / "best.pt" if path.is_dir() else path
 
 
 def load_keypoints(path):
-    """@brief Load the variant and parameters from geometry-checked weights.
+    """@brief 从已校验几何的权重中加载变体与参数。
 
-    @param[in] path Checkpoint or experiment directory.
-    @return Loaded CPU LiteKeypoints network.
+    @param[in] path 检查点或实验目录。
+    @return 加载到 CPU 的 LiteKeypoints 网络。
     """
     checkpoint = torch.load(lite_weights(path), weights_only=True, map_location="cpu")
     check_geometry(checkpoint)
@@ -36,11 +36,11 @@ def load_keypoints(path):
 
 
 def letterbox(rgb, side):
-    """@brief Return square RGB float NCHW in [0,1], resize gain and integer left/top padding (pixel).
+    """@brief 返回取值 [0,1] 的正方形浮点 RGB NCHW、缩放系数及整数左/上填充量（单位 pixel）。
 
-    @param[in] rgb Original RGB8 image.
-    @param[in] side Detector input side (pixel).
-    @return NCHW input, resize gain and integer left/top padding (pixel).
+    @param[in] rgb 原始 RGB8 图像。
+    @param[in] side 检测器输入边长，单位 pixel。
+    @return NCHW 输入、缩放系数及整数左/上填充量（单位 pixel）。
     """
     h, w = rgb.shape[:2]
     gain = side / max(h, w)
@@ -52,14 +52,14 @@ def letterbox(rgb, side):
 
 
 def best_box(candidates, gain, pad, width, height):
-    """@brief Decode the highest raw [cx,cy,w,h,score] candidate into clipped original XYXY (pixel).
+    """@brief 把得分最高的原始 [cx,cy,w,h,score] 候选解码为裁剪到原图内的 XYXY（单位 pixel）。
 
-    @param[in] candidates Raw detector output of shape 1×5×N.
-    @param[in] gain Letterbox resize gain.
-    @param[in] pad Left/top letterbox padding (pixel).
-    @param[in] width Original image width (pixel).
-    @param[in] height Original image height (pixel).
-    @return Exclusive original-image XYXY (pixel) and score, or (None, 0) on a miss.
+    @param[in] candidates 形状为 1×5×N 的原始检测器输出。
+    @param[in] gain letterbox 缩放系数。
+    @param[in] pad letterbox 左/上填充量，单位 pixel。
+    @param[in] width 原图宽度，单位 pixel。
+    @param[in] height 原图高度，单位 pixel。
+    @return 上界不含的原图 XYXY（单位 pixel）与得分；漏检时为 (None, 0)。
     """
     x, y, w, h, score = candidates[0, :, candidates[0, 4].argmax()]
     if score < 0.25:
@@ -73,25 +73,25 @@ def best_box(candidates, gain, pad, width, height):
 
 
 def crop_input(rgb, box):
-    """@brief Return float NCHW crop in [0,255] and original-image to crop transform (pixel).
+    """@brief 返回取值 [0,255] 的浮点 NCHW 裁剪图及原图到裁剪图的变换（单位 pixel）。
 
-    @param[in] rgb Original RGB8 image.
-    @param[in] box Original-image XYXY (pixel).
-    @return NCHW input and image-to-crop transform.
+    @param[in] rgb 原始 RGB8 图像。
+    @param[in] box 原图 XYXY，单位 pixel。
+    @return NCHW 输入与原图到裁剪图的变换。
     """
     crop, transform = square_crop(rgb, box)
     return np.ascontiguousarray(crop.transpose(2, 0, 1)[None], dtype=np.float32), transform
 
 
 def decode_prediction(box, score, heatmaps, logits, transform):
-    """@brief Restore heatmap peaks to original XY (pixel) and combine peaks with in-frame probabilities.
+    """@brief 把热图峰值还原到原图 XY（单位 pixel），并与图像内概率合成置信度。
 
-    @param[in] box Original-image XYXY (pixel).
-    @param[in] score Box confidence.
-    @param[in] heatmaps Batched heatmap output.
-    @param[in] logits Batched in-frame logits.
-    @param[in] transform Image-to-crop pixel transform.
-    @return Ordered landmark prediction in the original image (pixel).
+    @param[in] box 原图 XYXY，单位 pixel。
+    @param[in] score 检测框置信度。
+    @param[in] heatmaps 批量热图输出。
+    @param[in] logits 批量图像内 logit。
+    @param[in] transform 原图到裁剪图的像素变换。
+    @return 原图中的有序关键点预测，单位 pixel。
     """
     points, peaks = decode_heatmaps(heatmaps[0])
     confidence = peaks / (1 + np.exp(-logits[0].astype(float)))
@@ -99,34 +99,34 @@ def decode_prediction(box, score, heatmaps, logits, transform):
 
 
 class DetectorLitePredictor:
-    """@brief Single-object raw YOLO11 detection followed by LiteHRNet landmark inference."""
+    """@brief 单目标原始 YOLO11 检测，再接 LiteHRNet 关键点推理。"""
 
     def __init__(self, detector, keypoints, device="cpu"):
-        """@brief Load the two trained checkpoints on the given Torch device (or use a live fine-tuning network).
+        """@brief 在指定 Torch 设备上加载两个训练好的检查点（或使用微调中的在线网络）。
 
-        @param[in] detector Trained detector checkpoint or experiment.
-        @param[in] keypoints LiteHRNet checkpoint, experiment or live network during fine-tuning.
-        @param[in] device Torch device.
+        @param[in] detector 训练好的检测器检查点或实验目录。
+        @param[in] keypoints LiteHRNet 检查点、实验目录，或微调期间的在线网络。
+        @param[in] device Torch 设备。
         """
         yolo = load_yolo(detector, "detect")
-        ## Square detector input side (pixel).
+        ## 检测器正方形输入边长，单位 pixel。
         self.imgsz = yolo.ckpt["train_args"]["imgsz"]
-        ## Torch inference device.
+        ## Torch 推理设备。
         self.device = device
-        ## Fused YOLO detector with raw outputs.
+        ## 融合后输出原始结果的 YOLO 检测器。
         self.detector = yolo.model.fuse(verbose=False).to(device).eval()
         head = self.detector.model[-1]
         head.export, head.format = True, "onnx"
-        ## Landmark network shared with the exporter.
+        ## 与导出端共用的关键点网络。
         self.network = keypoints if isinstance(keypoints, LiteKeypoints) else load_keypoints(keypoints)
         self.network.to(device).eval()
 
     @torch.inference_mode()
     def predict(self, rgb):
-        """@brief Infer the highest-scoring box and 16 original-image landmarks (pixel) using only RGB.
+        """@brief 仅用 RGB 推理得分最高的检测框及 16 个原图关键点（单位 pixel）。
 
-        @param[in] rgb Original RGB8 image.
-        @return Prediction in original-image coordinates (pixel).
+        @param[in] rgb 原始 RGB8 图像。
+        @return 原图坐标下的预测，单位 pixel。
         """
         tensor, gain, pad = letterbox(rgb, self.imgsz)
         candidates = self.detector(torch.from_numpy(tensor).to(self.device)).cpu().numpy()

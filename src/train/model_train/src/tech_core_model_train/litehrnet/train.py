@@ -1,4 +1,4 @@
-"""@brief LiteHRNet training on Blender crops and development-set PnP model selection."""
+"""@brief 在 Blender 裁剪图上训练 LiteHRNet，并用开发集 PnP 选择模型。"""
 
 from math import cos, pi
 from pathlib import Path
@@ -19,44 +19,44 @@ from .predict import DetectorLitePredictor, lite_weights, load_keypoints
 
 
 class CropDataset(Dataset):
-    """@brief Positive Blender crops with aligned heatmap centres and in-frame labels."""
+    """@brief Blender 正样本裁剪图，附带对齐的热图中心与图像内标签。"""
 
     def __init__(self, root, rows, split, seed, augment=False):
-        """@brief Select the requested split and seed its training-only jitter and photometry.
+        """@brief 选出指定划分，并为仅训练期使用的抖动与光度增强设置种子。
 
-        @param[in] root Blender dataset directory.
-        @param[in] rows Manifest records.
-        @param[in] split train for jitter or val for fixed crops.
-        @param[in] seed Seed for crop jitter and photometry.
-        @param[in] augment Enable online photometry.
+        @param[in] root Blender 数据集目录。
+        @param[in] rows 清单记录。
+        @param[in] split train 使用抖动，val 使用固定裁剪。
+        @param[in] seed 裁剪抖动与光度增强的种子。
+        @param[in] augment 是否启用在线光度增强。
         """
-        ## Directory for manifest-relative image paths.
+        ## 清单相对图像路径的根目录。
         self.root = root
-        ## Positive source records in this split.
+        ## 该划分中的正样本源记录。
         self.rows = [
             r
             for r in rows
             if r["renderer"] == "blender" and r["split"] == split and not r["negative"] and r["bbox_xyxy"] is not None
         ]
-        ## Enable geometric crop jitter.
+        ## 是否启用几何裁剪抖动。
         self.training = split == "train"
-        ## Enable online appearance augmentation.
+        ## 是否启用在线外观增强。
         self.augment = augment
-        ## Seeded augmentation generator.
+        ## 带种子的增强随机数生成器。
         self.rng = np.random.default_rng(seed)
 
     def __len__(self):
-        """@brief Return the number of positive crops in this split.
+        """@brief 返回该划分中正样本裁剪图的数量。
 
-        @return Number of positive crops.
+        @return 正样本裁剪图数量。
         """
         return len(self.rows)
 
     def __getitem__(self, index):
-        """@brief Return float RGB CHW, heatmaps, in-frame flags and crop coordinates (pixel).
+        """@brief 返回浮点 RGB CHW、热图、图像内标记及裁剪图坐标（单位 pixel）。
 
-        @param[in] index Index in this split.
-        @return Crop, heatmaps, in-frame mask and crop-space targets (pixel).
+        @param[in] index 该划分内的下标。
+        @return 裁剪图、热图、图像内掩码及裁剪图空间的目标点（单位 pixel）。
         """
         row = self.rows[index]
         box = np.array(row["bbox_xyxy"])
@@ -75,7 +75,7 @@ class CropDataset(Dataset):
 
 @torch.inference_mode()
 def _crop_error(loader, network, device):
-    """@brief Mean Euclidean error of in-frame Blender validation landmarks in crop pixels."""
+    """@brief Blender 验证集中图像内关键点的平均欧氏误差，单位为裁剪图 pixel。"""
     errors = []
     for rgb, _, valid, truth in loader:
         maps, _ = network(rgb.to(device))
@@ -88,7 +88,7 @@ def _crop_error(loader, network, device):
 
 
 def _fit(data, out, variant, epochs, batch, learning_rate, seed, device, initial=None, dev_data=None, detector=None):
-    """@brief Fit heatmaps and visibility logits, saving the epoch selected on the designated split."""
+    """@brief 拟合热图与可见性 logit，保存在指定划分上选出的轮次。"""
     data, out = Path(data).resolve(), Path(out).resolve()
     manifest = load_manifest(data)
     if epochs < 1 or batch < 2 or learning_rate <= 0:
@@ -211,16 +211,16 @@ def _fit(data, out, variant, epochs, batch, learning_rate, seed, device, initial
 
 
 def train(data, out, variant=18, epochs=40, batch=16, learning_rate=0.001, seed=20261118, device="cpu"):
-    """@brief Transfer the COCO backbone and select weights by Blender validation crop error (pixel).
+    """@brief 迁移 COCO 主干，并按 Blender 验证集裁剪误差（单位 pixel）选择权重。
 
-    @param[in] data Completed Blender training dataset.
-    @param[in] out Empty run directory for weights and provenance.
-    @param[in] variant LiteHRNet depth, 18 or 30.
-    @param[in] epochs Training passes over the dataset.
-    @param[in] batch Maximum images per optimizer step.
-    @param[in] learning_rate Peak AdamW learning rate.
-    @param[in] seed Seed for crop jitter, initialization and shuffling.
-    @param[in] device Torch device.
+    @param[in] data 已完成的 Blender 训练数据集。
+    @param[in] out 存放权重与来源信息的空运行目录。
+    @param[in] variant LiteHRNet 深度，18 或 30。
+    @param[in] epochs 遍历数据集的轮数。
+    @param[in] batch 每个优化步的最大图像数。
+    @param[in] learning_rate AdamW 峰值学习率。
+    @param[in] seed 裁剪抖动、初始化与打乱顺序的种子。
+    @param[in] device Torch 设备。
     """
     _fit(data, out, variant, epochs, batch, learning_rate, seed, device)
 
@@ -228,17 +228,17 @@ def train(data, out, variant=18, epochs=40, batch=16, learning_rate=0.001, seed=
 def finetune(
     data, out, initial, dev_data, detector, epochs=30, batch=16, learning_rate=0.0001, seed=20261118, device="cpu"
 ):
-    """@brief Fine-tune on photometrically augmented Blender crops with epoch/threshold selection by development PnP.
+    """@brief 在光度增强后的 Blender 裁剪图上微调，并用开发集 PnP 选择轮次与门限。
 
-    @param[in] data Completed Blender training dataset.
-    @param[in] out Empty run directory for weights, provenance and frozen selection.
-    @param[in] initial Canonical LiteHRNet checkpoint or experiment.
-    @param[in] dev_data MuJoCo dataset reserved for model selection.
-    @param[in] detector Frozen detector checkpoint or experiment.
-    @param[in] epochs Training passes over the dataset.
-    @param[in] batch Maximum images per optimizer step.
-    @param[in] learning_rate Peak AdamW learning rate.
-    @param[in] seed Seed for training augmentation and shuffling.
-    @param[in] device Torch device.
+    @param[in] data 已完成的 Blender 训练数据集。
+    @param[in] out 存放权重、来源信息与冻结选择结果的空运行目录。
+    @param[in] initial 规范的 LiteHRNet 检查点或实验目录。
+    @param[in] dev_data 为模型选择保留的 MuJoCo 数据集。
+    @param[in] detector 冻结的检测器检查点或实验目录。
+    @param[in] epochs 遍历数据集的轮数。
+    @param[in] batch 每个优化步的最大图像数。
+    @param[in] learning_rate AdamW 峰值学习率。
+    @param[in] seed 训练增强与打乱顺序的种子。
+    @param[in] device Torch 设备。
     """
     _fit(data, out, None, epochs, batch, learning_rate, seed, device, initial, dev_data, detector)

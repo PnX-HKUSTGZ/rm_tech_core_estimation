@@ -1,4 +1,4 @@
-"""@brief Persistent headless Blender process for Cycles RGB and optical depth."""
+"""@brief 常驻的无界面 Blender 进程，用 Cycles 渲染 RGB 与光学深度。"""
 
 import json
 import os
@@ -18,11 +18,11 @@ from ..geometry import MODEL_DIR
 
 
 def find_blender() -> str:
-    """@brief Locate the headless Blender executable.
+    """@brief 定位无界面 Blender 可执行文件。
 
-    @return Executable selected by BLENDER_EXECUTABLE, or blender on PATH.
+    @return BLENDER_EXECUTABLE 指定的可执行文件，否则为 PATH 中的 blender。
 
-    @throws FileNotFoundError When the selected executable cannot be run.
+    @throws FileNotFoundError 所选可执行文件无法运行时抛出。
     """
     command = os.getenv("BLENDER_EXECUTABLE") or "blender"
     binary = shutil.which(command)
@@ -32,13 +32,13 @@ def find_blender() -> str:
 
 
 class BlenderBackend:
-    """@brief Reuse one Blender process and its loaded scene for a sequence of frames."""
+    """@brief 复用同一个 Blender 进程及其已加载场景渲染一系列帧。"""
 
     def __init__(self, camera, samples):
-        """@brief Start the worker and load the static studio scene.
+        """@brief 启动工作进程并加载静态影棚场景。
 
-        @param[in] camera Optical calibration (pixel) and clipping distances (m).
-        @param[in] samples Cycles samples per pixel.
+        @param[in] camera 光学标定（单位 pixel）与裁剪距离（单位 m）。
+        @param[in] samples Cycles 每像素采样数。
         """
         binary = find_blender()
         with ExitStack() as resources:
@@ -76,7 +76,7 @@ class BlenderBackend:
             self.resources = resources.pop_all()
 
     def _stop(self):
-        """@brief Close the request pipe and reap the worker, including during a cancelled render."""
+        """@brief 关闭请求管道并回收工作进程，渲染被取消时同样适用。"""
         self.process.stdin.close()
         try:
             self.process.wait(timeout=5)
@@ -85,7 +85,7 @@ class BlenderBackend:
             self.process.wait()
 
     def _receive(self):
-        """@brief Read one worker reply, retaining Blender's diagnostic output if it exits."""
+        """@brief 读取一次工作进程回复；进程退出时保留 Blender 的诊断输出。"""
         log = deque(maxlen=30)
         for line in self.process.stdout:
             if line.startswith("TECH_CORE_RESULT "):
@@ -94,12 +94,12 @@ class BlenderBackend:
         raise RuntimeError("Blender worker exited before replying.\n" + "\n".join(log))
 
     def render(self, camera_from_core, lamps, appearance):
-        """@brief Render RGB8 and optical depth (m, background zero) in Cycles.
+        """@brief 用 Cycles 渲染 RGB8 与光学深度（单位 m，背景为零）。
 
-        @param[in] camera_from_core Core pose in the optical frame (translation in m).
-        @param[in] lamps Materials indexed by mesh name.
-        @param[in] appearance Blender overrides or None for the default studio.
-        @return Owned RGB and optical depth arrays.
+        @param[in] camera_from_core 核心系在相机光学系中的位姿，平移单位 m。
+        @param[in] lamps 按网格名索引的材质。
+        @param[in] appearance Blender 外观覆盖参数；为 None 时使用默认影棚。
+        @return 独立持有的 RGB 与光学深度数组。
         """
         overrides = appearance or {}
         if unknown := overrides.keys() - DEFAULT_APPEARANCE.keys():
@@ -117,5 +117,5 @@ class BlenderBackend:
         return rgb, np.load(self.work / "depth.npy", allow_pickle=False)
 
     def close(self):
-        """@brief Close the worker and remove its private transfer directory."""
+        """@brief 关闭工作进程并删除其私有传输目录。"""
         self.resources.close()

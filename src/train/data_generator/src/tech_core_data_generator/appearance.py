@@ -1,10 +1,10 @@
-"""@brief Blender Cycles lighting, tone mapping and material parameters."""
+"""@brief Blender Cycles 光照、色调映射与材质参数。"""
 
 import numpy as np
 
 from .camera import Viewpoint
 
-## Reference Cycles studio. Positions are in the core frame (m), light power in W and colours linear RGB.
+## 参考 Cycles 影棚。位置为核心系坐标（单位 m），灯光功率单位 W，颜色为线性 RGB。
 DEFAULT_APPEARANCE = {
     "view_transform": "Standard",
     "exposure": 0.0,
@@ -21,11 +21,11 @@ DEFAULT_APPEARANCE = {
 
 
 def sample_appearance(rng: np.random.Generator, view: Viewpoint) -> dict:
-    """@brief Draw the training appearance used in the domain-randomized Blender dataset.
+    """@brief 采样域随机化 Blender 数据集使用的训练外观。
 
-    @param[in] rng Seeded random stream for this split.
-    @param[in] view Camera viewpoint used for the camera-side lighting component.
-    @return Serializable appearance overrides for TechCoreSimulator.render().
+    @param[in] rng 该划分使用的带种子随机数流。
+    @param[in] view 相机视角，用于相机侧光照分量。
+    @return 可序列化的外观覆盖参数，供 TechCoreSimulator.render() 使用。
     """
     if rng.random() < 0.55:
         centre = np.array([-0.1, 0, 0.2])
